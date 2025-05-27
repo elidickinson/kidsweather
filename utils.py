@@ -7,7 +7,6 @@ import hashlib
 import sqlite3
 import sys
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 import diskcache
 
 from config import API_CACHE_DIR, API_CACHE_TIME, LLM_LOG_DB_FILE
@@ -46,13 +45,13 @@ def init_llm_log_db():
             source TEXT         -- e.g., 'flask', 'script', 'replay'
         )
     ''')
-    
+
     # Check if llm_context column exists, add it if not (for existing databases)
     cursor.execute("PRAGMA table_info(llm_interactions)")
     columns = [row[1] for row in cursor.fetchall()]
     if 'llm_context' not in columns:
         cursor.execute('ALTER TABLE llm_interactions ADD COLUMN llm_context TEXT')
-    
+
     conn.commit()
     conn.close()
 
@@ -80,10 +79,10 @@ def log_llm_interaction(location_name, weather_input, system_prompt, model_used,
 def save_weather_data(data, filename=None, data_dir=None):
     """Save weather data to a file for testing."""
     from config import TEST_DATA_DIR
-    
+
     if not data_dir:
         data_dir = TEST_DATA_DIR
-    
+
     if not filename:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"weather_{timestamp}.json"
@@ -96,10 +95,10 @@ def save_weather_data(data, filename=None, data_dir=None):
 def load_weather_data(filename, data_dir=None):
     """Load weather data from a test file."""
     from config import TEST_DATA_DIR
-    
+
     if not data_dir:
         data_dir = TEST_DATA_DIR
-        
+
     filepath = data_dir / filename
     print(f"Loading data from {filepath}")
     with open(filepath, 'r') as f:
@@ -108,10 +107,10 @@ def load_weather_data(filename, data_dir=None):
 def load_system_prompt(prompt_file=None):
     """Loads the system prompt from the specified file."""
     from config import DEFAULT_PROMPT_FILE
-    
+
     if not prompt_file:
         prompt_file = DEFAULT_PROMPT_FILE
-    
+
     try:
         with open(prompt_file, 'r') as f:
             return f.read()
@@ -126,7 +125,7 @@ def load_system_prompt(prompt_file=None):
 def get_cache_key(prefix, *args):
     """Generate a consistent cache key from a prefix and arguments."""
     key_parts = [prefix]
-    
+
     for arg in args:
         if isinstance(arg, dict):
             # Sort dictionary keys for consistent hashing
@@ -143,8 +142,5 @@ def get_cache_key(prefix, *args):
         else:
             # Use short strings and numbers directly
             key_parts.append(str(arg))
-    
+
     return "_".join(key_parts)
-
-
-
