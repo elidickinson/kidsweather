@@ -15,7 +15,6 @@ For the 4-day outlook (daily_forecasts dict):
 - Focus on the most important weather change for each day
 
 Special considerations:
-- If UV index is High or above, always mention sun protection
 - If precipitation probability is >50%, mention umbrella
 - If big temperature changes, consider mentioning layers
 - In describing how the weather feels, take precipitation into account.

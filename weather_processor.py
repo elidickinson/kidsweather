@@ -68,9 +68,9 @@ def describe_uvi(uvi_value):
     uvi = float(uvi_value)
     if uvi < 4: return f"{uvi:.1f} (Low)"
     if uvi < 6: return f"{uvi:.1f} (Moderate)"
-    if uvi < 8: return f"{uvi:.1f} (High)"
-    if uvi < 11: return f"{uvi:.1f} (Very High)"
-    return f"{uvi:.1f} (Extreme)"
+    if uvi < 8: return f"{uvi:.1f} (High) - You must mention sunscreen!"
+    if uvi < 11: return f"{uvi:.1f} (Very High) - You must mention sunscreen!"
+    return f"{uvi:.1f} (Extreme) - You must mention sunscreen!"
 
 def describe_precipitation(pop, rain_mm=None, snow_mm=None, weather_types=None):
     """Create precipitation description."""
@@ -141,7 +141,10 @@ def format_weather_for_llm(api_data, yesterday_data=None):
 
     # Current date and time at location
     current_time = datetime.now(timezone.utc) + timedelta(seconds=tz_offset)
-    lines.append(f"Current Date and Time: {current_time.strftime('%A, %B %d, %Y at %I:%M %p')}")
+    # Round to nearest quarter hour to improve cache reuse
+    rounded_minute = (current_time.minute // 15) * 15
+    rounded_time = current_time.replace(minute=rounded_minute, second=0, microsecond=0)
+    lines.append(f"Current Date and Time: {rounded_time.strftime('%A, %B %d, %Y at %I:%M %p')}")
 
     # Location header
     lines.append(f"Weather Forecast for location near Lat: {api_data.get('lat', 'N/A')}, "
