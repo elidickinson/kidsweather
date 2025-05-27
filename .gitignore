@@ -1,0 +1,10 @@
+.aider*
+.env
+api_cache/
+/__pycache__
+/capture.png
+page.html
+*.sqlite3
+.venv/
+**/.claude/settings.local.json
+commit.txt

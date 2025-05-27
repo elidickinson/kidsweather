@@ -1,0 +1,7 @@
+requests
+python-dotenv
+Flask==3.1.0
+click
+diskcache
+feedparser
+pytz
