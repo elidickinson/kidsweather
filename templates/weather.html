@@ -105,7 +105,7 @@
                                 {% if 'feels_like' in weather and (weather['temperature'] - weather['feels_like'])|abs >= 10 %}
                                     (feels like {{ weather['feels_like'] }}°F)
                                 {% else %}
-                                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; display: inline-block;">{{ weather['conditions'] }}</span>
+                                    <span style="font-size: 3.5rem; word-wrap: break-word; max-width: 100%;">{{ weather['conditions'] }}</span>
                                 {% endif %}
                         </div>
                         <div style="display: flex; flex-direction: column; justify-content: center;">
