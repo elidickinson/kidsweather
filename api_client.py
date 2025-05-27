@@ -206,6 +206,12 @@ def _call_single_llm(context, system_prompt, api_url, api_key, model, supports_j
     
     # Strip <think>...</think> tags if present (common with some local LLMs)
     content = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL).strip()
+    
+    # Handle OpenRouter's temperature: prefix
+    if content.startswith('temperature:'):
+        content = content.split('temperature:')[1].strip()
+    
+    # Handle JSON code blocks
     if content.startswith('```json'):
         content = content[7:]  # Remove ```json
     elif content.startswith('```'):
