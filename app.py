@@ -19,7 +19,7 @@ import sys
 from flask import Flask, render_template, jsonify
 from dotenv import load_dotenv
 
-from config import DEFAULT_LAT, DEFAULT_LON, DEFAULT_LOCATION
+from config import DEFAULT_LAT, DEFAULT_LON
 from utils import init_llm_log_db
 from weather_processor import get_weather_report
 
@@ -31,13 +31,11 @@ def get_weather_data():
     # Use default location from config
     lat = DEFAULT_LAT
     lon = DEFAULT_LON
-    location_name = DEFAULT_LOCATION
 
     # Get weather report with logging enabled
     weather_data = get_weather_report(
         lat,
         lon,
-        location_name,
         log_interaction=True,  # Enable logging for Flask requests
         source='flask'         # Set source to 'flask'
     )

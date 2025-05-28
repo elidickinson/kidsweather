@@ -100,7 +100,7 @@ def main(log_id, prompt, new_model, show_context):
             local_timestamp_str = "N/A"
 
         # Display original info
-        print(f"--- Replaying Log ID: {log_id} (Location: {location_name}) ---")
+        print(f"--- Replaying Log ID: {log_id} ---")
         print(f"Original Timestamp (Stored): {original_timestamp}")
         print(f"Original Timestamp (Local): {local_timestamp_str}")
         print(f"Original Model: {original_model}")

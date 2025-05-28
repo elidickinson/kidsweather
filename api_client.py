@@ -148,7 +148,7 @@ def fetch_yesterday_weather(lat, lon, api_key):
         return None
 
 
-def _call_single_llm(context, system_prompt, api_url, api_key, model, supports_json_mode, location_name=None):
+def _call_single_llm(context, system_prompt, api_url, api_key, model, supports_json_mode):
     """
     Internal function to call a single LLM endpoint.
     
@@ -159,12 +159,11 @@ def _call_single_llm(context, system_prompt, api_url, api_key, model, supports_j
         api_key: API key for the language model
         model: Model identifier string
         supports_json_mode: Whether the LLM supports JSON response format
-        location_name: Optional location name for logging
     
     Returns:
         dict: Parsed JSON response from the language model
     """
-    print(f"Calling LLM API (Model: {model}) at {api_url} for location: {location_name}")
+    print(f"Calling LLM API (Model: {model}) at {api_url}")
     
     # Prepare request payload
     request_payload = {
@@ -229,7 +228,7 @@ def _call_single_llm(context, system_prompt, api_url, api_key, model, supports_j
     return result
 
 
-def call_llm_api(context, system_prompt, api_key=None, model=None, location_name=None):
+def call_llm_api(context, system_prompt, api_key=None, model=None):
     """
     Call the language model API with context and prompt, with automatic fallback.
 
@@ -238,7 +237,6 @@ def call_llm_api(context, system_prompt, api_key=None, model=None, location_name
         system_prompt: System prompt text
         api_key: API key for the language model
         model: Model identifier string
-        location_name: Optional location name for logging
 
     Returns:
         dict: Parsed JSON response from the language model
@@ -287,8 +285,7 @@ Your response must be a JSON object with this exact structure:
             api_url=LLM_API_URL,
             api_key=api_key,
             model=model,
-            supports_json_mode=LLM_SUPPORTS_JSON_MODE,
-            location_name=location_name
+            supports_json_mode=LLM_SUPPORTS_JSON_MODE
         )
         
         # Cache successful result
@@ -314,8 +311,7 @@ Your response must be a JSON object with this exact structure:
                     api_url=FALLBACK_LLM_API_URL,
                     api_key=FALLBACK_LLM_API_KEY,
                     model=FALLBACK_LLM_MODEL,
-                    supports_json_mode=FALLBACK_LLM_SUPPORTS_JSON_MODE,
-                    location_name=location_name
+                    supports_json_mode=FALLBACK_LLM_SUPPORTS_JSON_MODE
                 )
                 
                 print(f"Fallback LLM succeeded", file=sys.stderr)

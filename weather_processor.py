@@ -317,10 +317,10 @@ def extract_display_data(weather_data):
         },
         'alerts': alerts,
         'daily_forecast_raw': daily_forecast_raw,
-        'location': weather_data.get('location_name', '')
+        'location': ''
     }
 
-def generate_weather_description(weather_data, location_name=None, api_key=None,
+def generate_weather_description(weather_data, api_key=None,
                                log_interaction=False, source='unknown',
                                model=LLM_MODEL, prompt_override=None, include_yesterday=True):
     """
@@ -328,7 +328,6 @@ def generate_weather_description(weather_data, location_name=None, api_key=None,
 
     Args:
         weather_data: Raw weather data from API
-        location_name: Location name for logging
         api_key: DeepSeek API key (defaults to env var)
         log_interaction: Whether to log this interaction to database
         source: Source identifier for logging (flask, script, etc.)
@@ -387,14 +386,12 @@ def generate_weather_description(weather_data, location_name=None, api_key=None,
     print("Using text-formatted weather context for LLM")
 
     # Call LLM API
-    result = call_llm_api(llm_context, system_prompt, api_key=api_key, model=model,
-                         location_name=location_name or weather_data.get('location_name'))
+    result = call_llm_api(llm_context, system_prompt, api_key=api_key, model=model)
 
     # Log the interaction if requested
     if log_interaction:
         description_text = result.get('description', '')
         log_llm_interaction(
-            location_name=location_name or weather_data.get('location_name', 'N/A'),
             weather_input=weather_data,  # Log the raw data
             system_prompt=system_prompt,
             model_used=model,
@@ -406,7 +403,7 @@ def generate_weather_description(weather_data, location_name=None, api_key=None,
 
     return result
 
-def get_weather_report(lat, lon, location_name=None, mock_file=None,
+def get_weather_report(lat, lon, mock_file=None,
                      log_interaction=False, source='unknown', prompt_override=None,
                      include_yesterday=True):
     """
@@ -415,7 +412,6 @@ def get_weather_report(lat, lon, location_name=None, mock_file=None,
     Args:
         lat: Latitude coordinate
         lon: Longitude coordinate
-        location_name: Name of the location
         mock_file: Path to mock data file for testing
         log_interaction: Whether to log LLM interaction
         source: Source identifier for logging
@@ -430,21 +426,16 @@ def get_weather_report(lat, lon, location_name=None, mock_file=None,
     if mock_file:
         # Load mock data from file
         weather_data = load_weather_data(mock_file)
-        if location_name:
-            weather_data['location_name'] = location_name
     else:
         # Get current conditions from OpenWeatherMap
         if not WEATHER_API_KEY:
             raise ValueError("Missing WEATHER_API_KEY in environment variables")
 
         weather_data.update(fetch_weather_data(lat, lon, WEATHER_API_KEY))
-        if location_name:
-            weather_data['location_name'] = location_name
 
     # Generate description with LLM
     description = generate_weather_description(
         weather_data,
-        location_name=location_name,
         log_interaction=log_interaction,
         source=source,
         prompt_override=prompt_override,

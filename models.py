@@ -68,7 +68,6 @@ class WeatherContext:
     forecast: ForecastMetrics
     daily_forecast_raw: List[DailyForecast]  # Raw data from weather API
     alerts: List[WeatherAlert] = field(default_factory=list)
-    location: str = ""
 
 @dataclass
 class WeatherReport:
@@ -90,7 +89,6 @@ class LLMInteraction:
     """Record of an LLM interaction for logging and replay."""
     id: Optional[int] = None
     timestamp: Optional[datetime] = None
-    location_name: str = ""
     weather_input: Dict[str, Any] = field(default_factory=dict)
     system_prompt: str = ""
     model_used: str = ""

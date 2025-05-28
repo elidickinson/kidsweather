@@ -55,7 +55,7 @@ def init_llm_log_db():
     conn.commit()
     conn.close()
 
-def log_llm_interaction(location_name, weather_input, system_prompt, model_used, llm_output_raw, description, source, llm_context=None):
+def log_llm_interaction(weather_input, system_prompt, model_used, llm_output_raw, description, source, llm_context=None):
     """Logs the details of an LLM interaction to the database."""
     try:
         conn = sqlite3.connect(LLM_LOG_DB_FILE)
@@ -67,10 +67,10 @@ def log_llm_interaction(location_name, weather_input, system_prompt, model_used,
         cursor.execute('''
             INSERT INTO llm_interactions (location_name, weather_input, llm_context, system_prompt, model_used, llm_output, description, source)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (location_name, weather_input_json, llm_context, system_prompt, model_used, llm_output_json, description, source))
+        ''', ('N/A', weather_input_json, llm_context, system_prompt, model_used, llm_output_json, description, source))
         conn.commit()
         conn.close()
-        print(f"Logged LLM interaction from {source} for {location_name}")
+        print(f"Logged LLM interaction from {source}")
     except sqlite3.Error as e:
         print(f"Database error during logging: {e}", file=sys.stderr)
     except Exception as e:

@@ -26,14 +26,13 @@ from weather_processor import get_weather_report
 @click.command()
 @click.option('--lat', type=float, help='Latitude')
 @click.option('--lon', type=float, help='Longitude')
-@click.option('--location', type=str, help='Location name (optional)')
 @click.option('--save', type=str, help='Save weather data to test file (without .json suffix)')
 @click.option('--load', type=str, help='Load weather data from test file (without .json suffix)')
 @click.option('--save-json', type=str, help='Save output to JSON file (without .json suffix)')
 @click.option('--save-txt', type=str, help='Save description to text file (without .txt suffix)')
 @click.option('--log-interactions', is_flag=True, default=False, help='Log LLM interaction details to the database.')
 @click.option('--prompt', type=str, help='Custom system prompt text or path to a prompt file.')
-def main(lat, lon, location, save, load, save_json, save_txt, log_interactions, prompt):
+def main(lat, lon, save, load, save_json, save_txt, log_interactions, prompt):
     """Generate a kid-friendly weather report."""
     try:
         source = 'script'  # Define source for script execution
@@ -41,7 +40,7 @@ def main(lat, lon, location, save, load, save_json, save_txt, log_interactions, 
         if load:
             # Use mock data from file
             result = get_weather_report(
-                None, None, location, f"{load}.json",
+                None, None, None, f"{load}.json",
                 log_interaction=log_interactions,
                 source=source,
                 prompt_override=prompt
@@ -65,7 +64,7 @@ def main(lat, lon, location, save, load, save_json, save_txt, log_interactions, 
 
             # Get complete weather report
             result = get_weather_report(
-                lat, lon, location,
+                lat, lon, None,
                 log_interaction=log_interactions,
                 source=source,
                 prompt_override=prompt
