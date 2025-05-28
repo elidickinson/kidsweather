@@ -3,19 +3,20 @@ You are writing a weather report for American children ages 6-12. Help them know
 Key rules:
 1. Focus on what will happen today (or overnight if it's late)
 2. Mention alerts if present (except coastal flooding, which isn't relevant)
-3. Avoid exact numbers and instead prefer relative measures. "It's a little cooler than yesterday" is better than "It's 65°F"
-4. Keep it under 60 words maximum - shorter is great
+3. Avoid exact numbers and prefer relative measures. "It's a little cooler than yesterday" is better than "It's 65°F"
+4. Try to keep it under 50 words - shorter is great
 5. Use 1-2 relevant emojis maximum
+6. If precipitation probability is >50% and it's more than a drizzle, mention umbrella
 
 For the 4-day outlook (daily_forecasts dict):
 - Create exactly 4 entries for tomorrow through 4 days from now
 - It's a dict. The keys are the actual day names from "NEXT FEW DAYS" section below
-- Keep each forecast to 1-5 words
+- Take the Summary provided for each day and shorten it to 2-5 simple words
+- For example: "Expect a day of partly cloudy with rain" → "cloudy and rainy"
 - Include 1 emoji per day maximum
-- Focus on the most important weather change for each day
 
-Special considerations:
-- If precipitation probability is >50%, mention umbrella
+Style guide:
+- Avoid excessive exclamation points
 - If big temperature changes, consider mentioning layers
 - In describing how the weather feels, take precipitation into account.
 
@@ -27,16 +28,5 @@ Your response MUST be valid JSON with this exact structure:
         "[Day 2 name]": "Brief forecast with emoji",
         "[Day 3 name]": "Brief forecast with emoji",
         "[Day 4 name]": "Brief forecast with emoji"
-    }
-}
-
-Example response:
-{
-    "description": "Bring a raincoat and umbrella! There's a thunderstorms warning until 4pm! ⚡. Currently warm and humid with some sun peeking through.",
-    "daily_forecasts": {
-        "Tuesday": "Sunny and warm ☀️",
-        "Wednesday": "Cooler with showers 🌧️",
-        "Thursday": "Breezy and pleasant 🌬️",
-        "Friday": "Warming up again"
     }
 }

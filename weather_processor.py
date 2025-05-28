@@ -263,7 +263,7 @@ def format_weather_for_llm(api_data, yesterday_data=None):
             )
             lines.append(f"    Precipitation: {precip_desc}")
             lines.append(f"    Wind: {describe_wind(day.get('wind_speed'), day.get('wind_gust'))}.")
-            lines.append(f"    Max UV Index: {describe_uvi(day.get('uvi'))}.")
+            # lines.append(f"    Max UV Index: {describe_uvi(day.get('uvi'))}.")
     else:
         lines.append("  No extended forecast available.")
 
