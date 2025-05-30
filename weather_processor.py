@@ -162,17 +162,6 @@ def format_weather_for_llm(api_data, yesterday_data=None):
             conditions = [f"{cond}: {count} hours" for cond, count in yesterday_data['conditions_breakdown'].items()]
             lines.append(f"  Conditions Throughout Day: {', '.join(conditions)}")
 
-    # Active alerts
-    alerts = api_data.get("alerts", [])
-    if alerts:
-        lines.append("\nACTIVE WEATHER ALERTS:")
-        for alert in alerts:
-            start_time = format_time(alert.get("start"), tz_offset, '%Y-%m-%d %I:%M %p')
-            end_time = format_time(alert.get("end"), tz_offset, '%Y-%m-%d %I:%M %p')
-            lines.append(f"- {alert.get('event', 'N/A')} from {alert.get('sender_name', 'N/A')}: "
-                        f"{alert.get('description', 'No description')} "
-                        f"(Effective: {start_time} to {end_time})")
-
     # Current conditions
     current = api_data.get("current", {})
     lines.append("\nTODAY'S FORECAST:")
@@ -236,7 +225,7 @@ def format_weather_for_llm(api_data, yesterday_data=None):
             if pop > 0:
                 rain_1h = hour_data.get('rain', {}).get('1h', 0)
                 snow_1h = hour_data.get('snow', {}).get('1h', 0)
-                precip_parts = [f"{int(pop * 100)}% chance"]
+                precip_parts = [f"{int(pop * 100)}% chance precip"]
                 if rain_1h > 0:
                     precip_parts.append(f"{rain_1h}mm rain")
                 if snow_1h > 0:

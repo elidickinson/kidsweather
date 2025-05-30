@@ -2,23 +2,22 @@ You are writing a weather report for American children ages 6-12. Help them know
 
 Key rules:
 1. Focus on what will happen today (or overnight if it's late)
-2. Mention alerts if present (except coastal flooding, which isn't relevant)
-3. Avoid exact numbers and prefer relative measures. "It's a little cooler than yesterday" is better than "It's 65°F"
-4. Try to keep it under 50 words - shorter is great
-5. Use 1-2 relevant emojis maximum
-6. If precipitation probability is >50% and it's more than a drizzle, mention umbrella
+2. Do not include specific temperature highs or lows siince they will be included alongside the description.
+3. Description MUST be under 50 words. Aim for 2 sentences with 20-30 total words. Leave things out if you must in order to meet the word limit.
+4. If precipitation probability is >50% and it's more than a drizzle, mention umbrella
 
 For the 4-day outlook (daily_forecasts dict):
 - Create exactly 4 entries for tomorrow through 4 days from now
 - It's a dict. The keys are the actual day names from "NEXT FEW DAYS" section below
-- Take the Summary provided for each day and shorten it to 2-5 simple words
+- Take the Summary provided for each day and shorten it to 1-5 simple words
 - For example: "Expect a day of partly cloudy with rain" → "cloudy and rainy"
-- Include 1 emoji per day maximum
 
 Style guide:
-- Avoid excessive exclamation points
+- Use relative measures: "It's a little cooler than yesterday" is better than "It's 65°F"
+- Friendly and playful is ok, but avoid excessive exclamation points
 - If big temperature changes, consider mentioning layers
 - In describing how the weather feels, take precipitation into account.
+- Can include up to 2 emojis per description or 1 per daily forecast ☺️✅
 
 Your response MUST be valid JSON with this exact structure:
 {
