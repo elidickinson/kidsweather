@@ -49,12 +49,16 @@ def describe_wind(wind_speed, wind_gust=None):
     if wind_speed is None:
         return "Wind data not available."
 
+    if wind_speed >= 25:
+        desc = f"Very windy, with speeds around {wind_speed:.0f} mph."
     if wind_speed >= 15:
         desc = f"Windy, with speeds around {wind_speed:.0f} mph."
     elif wind_speed >= 5:
         desc = f"Breezy, with speeds around {wind_speed:.0f} mph."
-    else:
+    elif wind_speed > 1:
         desc = f"Light winds around {wind_speed:.0f} mph."
+    else:
+        desc = f"No wind."
 
     if wind_gust and wind_gust > wind_speed * 1.5 and wind_gust > 5:
         desc += f" Gusts up to {wind_gust:.0f} mph."
@@ -66,11 +70,11 @@ def describe_uvi(uvi_value):
     if uvi_value is None:
         return "N/A"
     uvi = float(uvi_value)
-    if uvi < 4: return f"{uvi:.1f} (Low)"
-    if uvi < 6: return f"{uvi:.1f} (Moderate)"
-    if uvi < 8: return f"{uvi:.1f} (High) - You must mention sunscreen!"
-    if uvi < 11: return f"{uvi:.1f} (Very High) - You must mention sunscreen!"
-    return f"{uvi:.1f} (Extreme) - You must mention sunscreen!"
+    if uvi < 4: return f"{uvi:.1f} (low)"
+    if uvi < 6: return f"{uvi:.1f} (mild)"
+    if uvi < 8: return f"{uvi:.1f} - You should mention sunscreen"
+    if uvi < 11: return f"{uvi:.1f} - You must mention sunscreen!"
+    return f"{uvi:.1f} Very Important: You must mention sunscreen and a hat!"
 
 def describe_precipitation(pop, rain_mm=None, snow_mm=None, weather_types=None):
     """Create precipitation description."""
@@ -205,8 +209,8 @@ def format_weather_for_llm(api_data, yesterday_data=None):
             weather_types
         )
         lines.append(f"  Precipitation: {precip_desc}")
-        lines.append(f"  Day Wind: {describe_wind(today.get('wind_speed'), today.get('wind_gust'))}.")
-        lines.append(f"  Max UV Index: {describe_uvi(today.get('uvi'))}.")
+        lines.append(f"  Day Wind: {describe_wind(today.get('wind_speed'), today.get('wind_gust'))}")
+        # lines.append(f"  Max UV Index: {describe_uvi(today.get('uvi'))}.")
 
     # Hourly forecast for next 8 hours
     hourly = api_data.get("hourly", [])
@@ -219,6 +223,11 @@ def format_weather_for_llm(api_data, yesterday_data=None):
 
             # Build hourly line
             hour_line = f"  {hour_time}: {weather_desc} at {temp}"
+
+            # mention UVI if relevant
+            if float(hour_data.get('uvi', 0)) >= 3:
+                uvi_desc = describe_uvi(hour_data.get('uvi'))
+                hour_line += f" ({uvi_desc})"
 
             # Add precipitation if present
             pop = hour_data.get('pop', 0)
@@ -380,13 +389,13 @@ def generate_weather_description(weather_data, api_key=None,
     # Log the interaction if requested
     if log_interaction:
         description_text = result.get('description', '')
-        
+
         # Create a dict for logging that includes the raw response
         log_output = {
             'raw_llm_response': result.get('_raw_llm_response', ''),
             'parsed_result': {k: v for k, v in result.items() if k != '_raw_llm_response'}
         }
-        
+
         log_llm_interaction(
             weather_input=weather_data,  # Log the raw data
             system_prompt=system_prompt,
