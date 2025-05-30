@@ -189,7 +189,7 @@ def _call_single_llm(context, system_prompt, api_url, api_key, model, supports_j
             "Content-Type": "application/json"
         },
         json=request_payload,
-        timeout=120
+        timeout=200
     )
     response.raise_for_status()
 
@@ -200,7 +200,7 @@ def _call_single_llm(context, system_prompt, api_url, api_key, model, supports_j
     raw_content = response_data['choices'][0]['message']['content']
 
     print(raw_content)
-    
+
     # Process content for JSON parsing
     content = raw_content.strip()
 
