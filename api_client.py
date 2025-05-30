@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from config import (
     WEATHER_API_URL, WEATHER_TIMEMACHINE_API_URL, API_CACHE_TIME, WEATHER_UNITS,
     LLM_API_URL, LLM_MODEL, LLM_API_KEY, LLM_SUPPORTS_JSON_MODE,
-    FALLBACK_LLM_API_URL, FALLBACK_LLM_MODEL, FALLBACK_LLM_API_KEY, 
+    FALLBACK_LLM_API_URL, FALLBACK_LLM_MODEL, FALLBACK_LLM_API_KEY,
     FALLBACK_LLM_SUPPORTS_JSON_MODE, FALLBACK_LLM_ENABLED
 )
 from utils import cache, get_cache_key
@@ -151,7 +151,7 @@ def fetch_yesterday_weather(lat, lon, api_key):
 def _call_single_llm(context, system_prompt, api_url, api_key, model, supports_json_mode):
     """
     Internal function to call a single LLM endpoint.
-    
+
     Args:
         context: Dictionary with weather context data or text string
         system_prompt: System prompt text
@@ -159,12 +159,12 @@ def _call_single_llm(context, system_prompt, api_url, api_key, model, supports_j
         api_key: API key for the language model
         model: Model identifier string
         supports_json_mode: Whether the LLM supports JSON response format
-    
+
     Returns:
         dict: Parsed JSON response from the language model
     """
     print(f"Calling LLM API (Model: {model}) at {api_url}")
-    
+
     # Prepare request payload
     request_payload = {
         "model": model,
@@ -174,14 +174,14 @@ def _call_single_llm(context, system_prompt, api_url, api_key, model, supports_j
         ],
         "stream": False
     }
-    
+
     # Only add response_format if the provider supports it
     if supports_json_mode:
         request_payload["response_format"] = {"type": "json_object"}
-    
+
     # Debug logging
     print(f"Request URL: {api_url}")
-    
+
     response = requests.post(
         api_url,
         headers={
@@ -189,42 +189,42 @@ def _call_single_llm(context, system_prompt, api_url, api_key, model, supports_j
             "Content-Type": "application/json"
         },
         json=request_payload,
-        timeout=60
+        timeout=120
     )
     response.raise_for_status()
-    
+
     response_data = response.json()
     if 'choices' not in response_data or not response_data['choices']:
         raise ValueError("No choices in LLM response")
-    
+
     content = response_data['choices'][0]['message']['content']
-    
+
     print(content)
     # Strip markdown code fences if present (common with local LLMs)
     content = content.strip()
-    
+
     # Strip <think>...</think> tags if present (common with some local LLMs)
     content = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL).strip()
-    
+
     # Handle OpenRouter's temperature: prefix
     if content.startswith('temperature:'):
         content = content.split('temperature:')[1].strip()
-    
+
     # Handle JSON code blocks
     if content.startswith('```json'):
         content = content[7:]  # Remove ```json
     elif content.startswith('```'):
         content = content[3:]  # Remove ```
-    
+
     if content.endswith('```'):
         content = content[:-3]  # Remove ```
-    
+
     try:
         result = json.loads(content)
     except json.JSONDecodeError as e:
         print(f"Failed to parse LLM JSON response. Content: {content[:200]}...", file=sys.stderr)
         raise ValueError(f"LLM did not return valid JSON: {e}")
-    
+
     return result
 
 
@@ -244,23 +244,23 @@ def call_llm_api(context, system_prompt, api_key=None, model=None):
     # Use defaults if not provided
     api_key = api_key or LLM_API_KEY
     model = model or LLM_MODEL
-    
+
     # JSON format instructions
-    json_instructions = """\n\nIMPORTANT: You MUST respond with ONLY valid JSON, no other text before or after.
-Your response must be a JSON object with this exact structure:
-{
-  "description": "A kid-friendly weather description",
-  "daily_forecasts": ["Day 1 forecast", "Day 2 forecast", "Day 3 forecast", "Day 4 forecast"],
-  "temperature": 72,
-  "feels_like": 70,
-  "conditions": "clear sky",
-  "high_temp": 78,
-  "low_temp": 65,
-  "icon_url": "http://openweathermap.org/img/wn/01d@4x.png",
-  "alerts": [],
-  "last_updated": "Monday, December 4 at 3:30 PM"
-}"""
-    
+#     json_instructions = """\n\nIMPORTANT: You MUST respond with ONLY valid JSON, no other text before or after."""
+# Your response must be a JSON object with this exact structure:
+# {
+#   "description": "A kid-friendly weather description",
+#   "daily_forecasts": ["Day 1 forecast", "Day 2 forecast", "Day 3 forecast", "Day 4 forecast"],
+#   "temperature": 72,
+#   "feels_like": 70,
+#   "conditions": "clear sky",
+#   "high_temp": 78,
+#   "low_temp": 65,
+#   "icon_url": "http://openweathermap.org/img/wn/01d@4x.png",
+#   "alerts": [],
+#   "last_updated": "Monday, December 4 at 3:30 PM"
+# }"""
+
     # Create a cache key based on context, prompt, and model
     prompt_hash = hashlib.sha256(system_prompt.encode()).hexdigest()
     cache_key = get_cache_key("llm", context, prompt_hash, model)
@@ -271,14 +271,14 @@ Your response must be a JSON object with this exact structure:
         return cache.get(cache_key)
 
     print(f"Cache miss for LLM: {cache_key}")
-    
+
     # Try primary LLM first
     try:
         # Add JSON instructions if needed for primary LLM
         system_prompt_primary = system_prompt
-        if not LLM_SUPPORTS_JSON_MODE:
-            system_prompt_primary = system_prompt + json_instructions
-            
+        # if not LLM_SUPPORTS_JSON_MODE:
+        #     system_prompt_primary = system_prompt + json_instructions
+
         result = _call_single_llm(
             context=context,
             system_prompt=system_prompt_primary,
@@ -287,24 +287,24 @@ Your response must be a JSON object with this exact structure:
             model=model,
             supports_json_mode=LLM_SUPPORTS_JSON_MODE
         )
-        
+
         # Cache successful result
         cache.set(cache_key, result, expire=API_CACHE_TIME)
         return result
-        
+
     except Exception as e:
         print(f"Primary LLM failed: {e}", file=sys.stderr)
-        
+
         # Try fallback if available
         if FALLBACK_LLM_ENABLED:
             print(f"Attempting fallback LLM (Model: {FALLBACK_LLM_MODEL})", file=sys.stderr)
-            
+
             try:
                 # Add JSON instructions if needed for fallback LLM
                 system_prompt_fallback = system_prompt
                 if not FALLBACK_LLM_SUPPORTS_JSON_MODE:
                     system_prompt_fallback = system_prompt + json_instructions
-                    
+
                 result = _call_single_llm(
                     context=context,
                     system_prompt=system_prompt_fallback,
@@ -313,13 +313,13 @@ Your response must be a JSON object with this exact structure:
                     model=FALLBACK_LLM_MODEL,
                     supports_json_mode=FALLBACK_LLM_SUPPORTS_JSON_MODE
                 )
-                
+
                 print(f"Fallback LLM succeeded", file=sys.stderr)
-                
+
                 # Cache successful result
                 cache.set(cache_key, result, expire=API_CACHE_TIME)
                 return result
-                
+
             except Exception as fallback_e:
                 print(f"Fallback LLM also failed: {fallback_e}", file=sys.stderr)
                 # Re-raise the original error with additional context
