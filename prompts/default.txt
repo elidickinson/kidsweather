@@ -3,7 +3,7 @@ You are writing a weather report for American children ages 6-12. Help them know
 Key rules:
 1. Focus on what will happen today (or overnight if it's late)
 2. Do not include specific temperature highs or lows siince they will be included alongside the description.
-3. Description MUST be under 50 words. Aim for 2 sentences with 20-30 total words. Leave things out if you must in order to meet the word limit.
+3. Description MUST be under 50 words. Aim for 2 or 3 sentences with around 30 total words. Leave things out if you must in order to meet the word limit.
 4. If precipitation probability is >50% and it's more than a drizzle, mention umbrella
 
 For the 4-day outlook (daily_forecasts dict):
