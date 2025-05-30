@@ -197,11 +197,12 @@ def _call_single_llm(context, system_prompt, api_url, api_key, model, supports_j
     if 'choices' not in response_data or not response_data['choices']:
         raise ValueError("No choices in LLM response")
 
-    content = response_data['choices'][0]['message']['content']
+    raw_content = response_data['choices'][0]['message']['content']
 
-    print(content)
-    # Strip markdown code fences if present (common with local LLMs)
-    content = content.strip()
+    print(raw_content)
+    
+    # Process content for JSON parsing
+    content = raw_content.strip()
 
     # Strip <think>...</think> tags if present (common with some local LLMs)
     content = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL).strip()
@@ -225,7 +226,11 @@ def _call_single_llm(context, system_prompt, api_url, api_key, model, supports_j
         print(f"Failed to parse LLM JSON response. Content: {content[:200]}...", file=sys.stderr)
         raise ValueError(f"LLM did not return valid JSON: {e}")
 
-    return result
+    # Return both raw and parsed content
+    return {
+        'raw_response': raw_content,
+        'parsed_result': result
+    }
 
 
 def call_llm_api(context, system_prompt, api_key=None, model=None):
@@ -279,7 +284,7 @@ def call_llm_api(context, system_prompt, api_key=None, model=None):
         # if not LLM_SUPPORTS_JSON_MODE:
         #     system_prompt_primary = system_prompt + json_instructions
 
-        result = _call_single_llm(
+        llm_response = _call_single_llm(
             context=context,
             system_prompt=system_prompt_primary,
             api_url=LLM_API_URL,
@@ -288,6 +293,11 @@ def call_llm_api(context, system_prompt, api_key=None, model=None):
             supports_json_mode=LLM_SUPPORTS_JSON_MODE
         )
 
+        # For backward compatibility, cache and return the parsed result
+        # but add the raw response to it
+        result = llm_response['parsed_result']
+        result['_raw_llm_response'] = llm_response['raw_response']
+        
         # Cache successful result
         cache.set(cache_key, result, expire=API_CACHE_TIME)
         return result
@@ -305,7 +315,7 @@ def call_llm_api(context, system_prompt, api_key=None, model=None):
                 if not FALLBACK_LLM_SUPPORTS_JSON_MODE:
                     system_prompt_fallback = system_prompt + json_instructions
 
-                result = _call_single_llm(
+                llm_response = _call_single_llm(
                     context=context,
                     system_prompt=system_prompt_fallback,
                     api_url=FALLBACK_LLM_API_URL,
@@ -316,6 +326,11 @@ def call_llm_api(context, system_prompt, api_key=None, model=None):
 
                 print(f"Fallback LLM succeeded", file=sys.stderr)
 
+                # For backward compatibility, cache and return the parsed result
+                # but add the raw response to it
+                result = llm_response['parsed_result']
+                result['_raw_llm_response'] = llm_response['raw_response']
+                
                 # Cache successful result
                 cache.set(cache_key, result, expire=API_CACHE_TIME)
                 return result

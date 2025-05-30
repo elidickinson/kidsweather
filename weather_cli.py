@@ -40,7 +40,8 @@ def main(lat, lon, save, load, save_json, save_txt, log_interactions, prompt):
         if load:
             # Use mock data from file
             result = get_weather_report(
-                None, None, None, f"{load}.json",
+                None, None,
+                mock_file=f"{load}.json",
                 log_interaction=log_interactions,
                 source=source,
                 prompt_override=prompt
@@ -64,7 +65,7 @@ def main(lat, lon, save, load, save_json, save_txt, log_interactions, prompt):
 
             # Get complete weather report
             result = get_weather_report(
-                lat, lon, None,
+                lat, lon,
                 log_interaction=log_interactions,
                 source=source,
                 prompt_override=prompt

@@ -380,11 +380,18 @@ def generate_weather_description(weather_data, api_key=None,
     # Log the interaction if requested
     if log_interaction:
         description_text = result.get('description', '')
+        
+        # Create a dict for logging that includes the raw response
+        log_output = {
+            'raw_llm_response': result.get('_raw_llm_response', ''),
+            'parsed_result': {k: v for k, v in result.items() if k != '_raw_llm_response'}
+        }
+        
         log_llm_interaction(
             weather_input=weather_data,  # Log the raw data
             system_prompt=system_prompt,
             model_used=model,
-            llm_output_raw=result,
+            llm_output_raw=log_output,
             description=description_text,
             source=source,
             llm_context=llm_context  # Add the formatted context
