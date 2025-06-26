@@ -53,8 +53,8 @@ def describe_wind(wind_speed, wind_gust=None):
         desc = f"Very windy, with speeds around {wind_speed:.0f} mph."
     if wind_speed >= 15:
         desc = f"Windy, with speeds around {wind_speed:.0f} mph."
-    elif wind_speed >= 5:
-        desc = f"Breezy, with speeds around {wind_speed:.0f} mph."
+    # elif wind_speed >= 5:
+    #     desc = f"Breezy, with speeds around {wind_speed:.0f} mph."
     elif wind_speed > 1:
         desc = f"Light winds around {wind_speed:.0f} mph."
     else:
