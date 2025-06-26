@@ -265,7 +265,7 @@ def call_llm_api(context, system_prompt, api_key=None, model=None):
 #   "alerts": [],
 #   "last_updated": "Monday, December 4 at 3:30 PM"
 # }"""
-
+    print(context)
     # Create a cache key based on context, prompt, and model
     prompt_hash = hashlib.sha256(system_prompt.encode()).hexdigest()
     cache_key = get_cache_key("llm", context, prompt_hash, model)
@@ -279,14 +279,9 @@ def call_llm_api(context, system_prompt, api_key=None, model=None):
 
     # Try primary LLM first
     try:
-        # Add JSON instructions if needed for primary LLM
-        system_prompt_primary = system_prompt
-        # if not LLM_SUPPORTS_JSON_MODE:
-        #     system_prompt_primary = system_prompt + json_instructions
-
         llm_response = _call_single_llm(
             context=context,
-            system_prompt=system_prompt_primary,
+            system_prompt=system_prompt,
             api_url=LLM_API_URL,
             api_key=api_key,
             model=model,
@@ -297,7 +292,7 @@ def call_llm_api(context, system_prompt, api_key=None, model=None):
         # but add the raw response to it
         result = llm_response['parsed_result']
         result['_raw_llm_response'] = llm_response['raw_response']
-        
+
         # Cache successful result
         cache.set(cache_key, result, expire=API_CACHE_TIME)
         return result
@@ -310,14 +305,9 @@ def call_llm_api(context, system_prompt, api_key=None, model=None):
             print(f"Attempting fallback LLM (Model: {FALLBACK_LLM_MODEL})", file=sys.stderr)
 
             try:
-                # Add JSON instructions if needed for fallback LLM
-                system_prompt_fallback = system_prompt
-                if not FALLBACK_LLM_SUPPORTS_JSON_MODE:
-                    system_prompt_fallback = system_prompt + json_instructions
-
                 llm_response = _call_single_llm(
                     context=context,
-                    system_prompt=system_prompt_fallback,
+                    system_prompt=system_prompt,
                     api_url=FALLBACK_LLM_API_URL,
                     api_key=FALLBACK_LLM_API_KEY,
                     model=FALLBACK_LLM_MODEL,
@@ -330,7 +320,7 @@ def call_llm_api(context, system_prompt, api_key=None, model=None):
                 # but add the raw response to it
                 result = llm_response['parsed_result']
                 result['_raw_llm_response'] = llm_response['raw_response']
-                
+
                 # Cache successful result
                 cache.set(cache_key, result, expire=API_CACHE_TIME)
                 return result
