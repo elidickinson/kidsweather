@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 - Run Flask web app: `./app.py`
-- Run weather script: `./weather_script.py --lat 38.9 --lon -77.0 --location "Washington, DC"`
+- Run weather script: `./weather_script.py --lat 38.9 --lon -77.0`
 - Run LLM replay: `./replay_llm.py --log-id <id>`
 - Deploy to server: `./deploy.sh`
 - Source the .venv when running python scripts

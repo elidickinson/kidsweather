@@ -2,6 +2,10 @@
 
 A simple Python service that generates natural, kid-friendly weather descriptions using OpenWeatherMap and any OpenAI-compatible LLM API. It includes a command-line script, a Flask web application, API caching, and LLM interaction logging/replay capabilities.
 
+## What's It For?
+
+I built it as part of a *[big eInk weather display](https://eli.pizza/posts/eink-weather-display-for-kids/)* to generate a weather forecast that my kids could understand.
+
 ## Requirements
 
 - Python 3.9+
@@ -99,34 +103,33 @@ FALLBACK_LLM_MODEL=anthropic/claude-3-haiku
 
 Generate a report for a specific location:
 ```bash
-./weather_cli.py --lat 38.9 --lon -77.0 --location "Washington, DC"
+uv run ./weather_cli.py --lat 38.9 --lon -77.0
 ```
 
 Load data from a test file (e.g., `test_data/dc1.json`):
 ```bash
-./weather_cli.py --load dc1 --location "Washington, DC"
+uv run ./weather_cli.py --load dc1
 ```
 
-Save the fetched weather data for later use:
+Save the fetched weather data for later use (e.g. for testing):
 ```bash
-./weather_cli.py --lat 38.9 --lon -77.0 --save dc_latest
+uv run ./weather_cli.py --lat 38.9 --lon -77.0 --save dc_latest
 ```
 
 Log the LLM interaction to `llm_log.sqlite3`:
 ```bash
-./weather_cli.py --lat 38.9 --lon -77.0 --log-interactions
+uv run ./weather_cli.py --lat 38.9 --lon -77.0 --log-interactions
 ```
 
 Save the output description or full JSON:
 ```bash
-./weather_cli.py --lat 38.9 --lon -77.0 --save-txt report_desc
-./weather_cli.py --lat 38.9 --lon -77.0 --save-json report_full
+uv run ./weather_cli.py --lat 38.9 --lon -77.0 --save-txt report_desc
+uv run ./weather_cli.py --lat 38.9 --lon -77.0 --save-json report_full
 ```
 
 **Arguments:**
 - `--lat`: Latitude (required unless using `--load`)
 - `--lon`: Longitude (required unless using `--load`)
-- `--location`: Location name (optional, improves description)
 - `--load`: Load weather data from `test_data/<name>.json`
 - `--save`: Save fetched weather data to `test_data/<name>.json`
 - `--log-interactions`: Log LLM call details to `llm_log.sqlite3`
@@ -137,7 +140,7 @@ Save the output description or full JSON:
 
 Run the web server (defaults to port 5001):
 ```bash
-./app.py
+uv run app.py
 ```
 Then open http://127.0.0.1:5001 in your browser.
 
@@ -148,24 +151,24 @@ The app provides endpoints:
 
 Render the HTML directly to a file:
 ```bash
-./app.py --render page.html
+uv run app.py --render page.html
 ```
 
 ### LLM Replay Script (`replay.py`)
 
 Replay a specific logged LLM interaction (e.g., log ID 5) using the original prompt and model:
 ```bash
-./replay.py --log-id 5
+uv run replay.py --log-id 5
 ```
 
 Replay log ID 5 using a different model:
 ```bash
-./replay.py --log-id 5 --new-model deepseek-coder
+uv run replay.py --log-id 5 --new-model deepseek-coder
 ```
 
 Replay log ID 5 using a new system prompt text:
 ```bash
-./replay.py --log-id 5 --prompt "You are a pirate weather forecaster. Be funny. Respond in JSON."
+uv run replay.py --log-id 5 --prompt "You are a pirate weather forecaster. Be funny. Respond in JSON."
 ```
 
 **Arguments:**
