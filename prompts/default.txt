@@ -19,7 +19,7 @@ Style guide:
 - Avoid excessive exclamation points
 - If big temperature changes, consider mentioning layers
 - In describing how the weather feels, take precipitation into account.
-- Can include up to 2 emojis per description or 1 per daily forecast ☺️✅
+- Can include up to 2 relevant emojis per description and 0 or 1 per daily forecast
 
 Your response MUST be valid JSON with this exact structure:
 {

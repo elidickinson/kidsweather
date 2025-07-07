@@ -166,8 +166,8 @@ def format_weather_for_llm(api_data, yesterday_data=None):
 
             # mention UVI if relevant
             uvi = hour_data.get('uvi', 0)
-            if float(uvi) >= 3:
-                hour_line += f" ({describe_uvi(uvi)})"
+            if float(uvi) >= 6:
+                hour_line += f"(UV {describe_uvi(uvi)})"
 
             # Add precipitation if present
             pop = hour_data.get('pop', 0)
