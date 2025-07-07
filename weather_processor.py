@@ -24,9 +24,13 @@ from api_client import (
 
 # --- Weather Data Processing ---
 
-def format_temperature(temp, unit="°F"):
-    """Format temperature with unit."""
-    return f"{round(temp)}{unit}" if temp is not None else "N/A"
+def format_time(timestamp_utc, timezone_offset_seconds=0):
+    """Convert UTC timestamp to local time string."""
+    if timestamp_utc is None:
+        return "N/A"
+    utc_dt = datetime.fromtimestamp(timestamp_utc, tz=timezone.utc)
+    local_dt = utc_dt + timedelta(seconds=timezone_offset_seconds)
+    return local_dt.strftime('%I:%M %p')
 
 def get_day_name(timestamp_utc, timezone_offset_seconds=0):
     """Get day name from UTC timestamp."""
@@ -35,34 +39,23 @@ def get_day_name(timestamp_utc, timezone_offset_seconds=0):
     local_dt = datetime.fromtimestamp(timestamp_utc, tz=timezone.utc) + timedelta(seconds=timezone_offset_seconds)
     return local_dt.strftime('%A')
 
-def format_time(timestamp_utc, timezone_offset_seconds=0, time_format='%I:%M %p'):
-    """Convert UTC timestamp to local time string."""
-    if timestamp_utc is None:
-        return "N/A"
-    utc_dt = datetime.fromtimestamp(timestamp_utc, tz=timezone.utc)
-    local_dt = utc_dt + timedelta(seconds=timezone_offset_seconds)
-    return local_dt.strftime(time_format)
-
-
 def describe_wind(wind_speed, wind_gust=None):
     """Create wind description."""
     if wind_speed is None:
         return "Wind data not available."
-
-    if wind_speed >= 25:
+    elif wind_speed >= 25:
         desc = f"Very windy, with speeds around {wind_speed:.0f} mph."
-    if wind_speed >= 15:
+    elif wind_speed >= 15:
         desc = f"Windy, with speeds around {wind_speed:.0f} mph."
-    # elif wind_speed >= 5:
-    #     desc = f"Breezy, with speeds around {wind_speed:.0f} mph."
-    elif wind_speed > 1:
+    elif wind_speed >= 5:
         desc = f"Light winds around {wind_speed:.0f} mph."
+    elif wind_speed > 1:
+        desc = f"Mostly calm."
     else:
-        desc = f"No wind."
+        desc = "No wind."
 
     if wind_gust and wind_gust > wind_speed * 1.5 and wind_gust > 5:
         desc += f" Gusts up to {wind_gust:.0f} mph."
-
     return desc
 
 def describe_uvi(uvi_value):
@@ -75,63 +68,6 @@ def describe_uvi(uvi_value):
     if uvi < 8: return f"{uvi:.1f} - You should mention sunscreen"
     if uvi < 11: return f"{uvi:.1f} - You must mention sunscreen!"
     return f"{uvi:.1f} Very Important: You must mention sunscreen and a hat!"
-
-def describe_precipitation(pop, rain_mm=None, snow_mm=None, weather_types=None):
-    """Create precipitation description."""
-    if pop <= 0:
-        return "Low chance of precipitation."
-
-    parts = [f"{int(pop * 100)}% chance"]
-
-    # Determine precipitation types
-    precip_types = []
-    if weather_types:
-        for wt in weather_types:
-            if wt and any(term in wt.lower() for term in ["rain", "drizzle"]):
-                precip_types.append("rain")
-            if wt and any(term in wt.lower() for term in ["snow", "sleet"]):
-                precip_types.append("snow")
-
-    # Add types based on amounts if not already determined
-    if not precip_types:
-        if rain_mm and rain_mm > 0:
-            precip_types.append("rain")
-        if snow_mm and snow_mm > 0:
-            precip_types.append("snow")
-
-    precip_types = list(set(precip_types))  # Remove duplicates
-
-    if precip_types:
-        parts.append(f"of {'/'.join(precip_types)}")
-    else:
-        parts.append("of precipitation")
-
-    # Add intensity descriptions
-    intensity_parts = []
-    if "rain" in precip_types and rain_mm:
-        if rain_mm < 1:
-            intensity_parts.append("trace rain")
-        elif rain_mm < 2.5:
-            intensity_parts.append("light rain")
-        elif rain_mm < 10:
-            intensity_parts.append("moderate rain")
-        else:
-            intensity_parts.append("heavy rain")
-
-    if "snow" in precip_types and snow_mm:
-        if snow_mm < 5:
-            intensity_parts.append("trace snow")
-        elif snow_mm < 25:
-            intensity_parts.append("light snow")
-        elif snow_mm < 75:
-            intensity_parts.append("moderate snow")
-        else:
-            intensity_parts.append("heavy snow")
-
-    if intensity_parts:
-        parts.append(f"({', '.join(intensity_parts)})")
-
-    return f"{' '.join(parts)}."
 
 def format_weather_for_llm(api_data, yesterday_data=None):
     """
@@ -150,17 +86,15 @@ def format_weather_for_llm(api_data, yesterday_data=None):
     rounded_time = current_time.replace(minute=rounded_minute, second=0, microsecond=0)
     lines.append(f"Current Date and Time: {rounded_time.strftime('%A, %B %d, %Y at %I:%M %p')}")
 
-    # Location header
-    lines.append(f"Weather Forecast for location near Lat: {api_data.get('lat', 'N/A')}, "
-                f"Lon: {api_data.get('lon', 'N/A')} (Timezone: {api_data.get('timezone', 'N/A')}).")
-
     # Yesterday's weather summary if available
     if yesterday_data:
         lines.append(f"\nYESTERDAY'S WEATHER ({yesterday_data['date']}):")
-        lines.append(f"  Average Temperature: {format_temperature(yesterday_data['avg_temp'])} "
-                    f"(felt like {format_temperature(yesterday_data['avg_feels_like'])})")
-        lines.append(f"  High: {format_temperature(yesterday_data['high_temp'])}, "
-                    f"Low: {format_temperature(yesterday_data['low_temp'])}")
+        avg_temp = f"{round(yesterday_data['avg_temp'])}°F" if yesterday_data['avg_temp'] else "N/A"
+        feels_like = f"{round(yesterday_data['avg_feels_like'])}°F" if yesterday_data['avg_feels_like'] else "N/A"
+        high_temp = f"{round(yesterday_data['high_temp'])}°F" if yesterday_data['high_temp'] else "N/A"
+        low_temp = f"{round(yesterday_data['low_temp'])}°F" if yesterday_data['low_temp'] else "N/A"
+        lines.append(f"  Average Temperature: {avg_temp} (felt like {feels_like})")
+        lines.append(f"  High: {high_temp}, Low: {low_temp}")
         lines.append(f"  Main Condition: {yesterday_data['main_condition']}")
         if yesterday_data.get('conditions_breakdown'):
             conditions = [f"{cond}: {count} hours" for cond, count in yesterday_data['conditions_breakdown'].items()]
@@ -172,8 +106,11 @@ def format_weather_for_llm(api_data, yesterday_data=None):
 
     # Current weather
     current_desc = current.get("weather", [{}])[0].get("description", "Not available")
-    lines.append(f"  Right Now: {current_desc} at {format_temperature(current.get('temp'))} "
-                f"(feels like {format_temperature(current.get('feels_like'))}).")
+    current_weather_line = f"  Right Now: {current_desc} at {round(current.get('temp', 0))}°F"
+    # Include "feels like" if its different enough from actual temp
+    if current.get('feels_like') and (abs(round(current.get('temp', 0)) - round(current.get('feels_like'))) > 5):
+        current_weather_line += f"  (feels like {round(current.get('feels_like'))}°F)."
+    lines.append(current_weather_line)
 
     # Current precipitation
     rain_1h = current.get("rain", {}).get("1h")
@@ -197,37 +134,43 @@ def format_weather_for_llm(api_data, yesterday_data=None):
         today = daily[0]
         lines.append(f"\n  Overall for Today ({get_day_name(today.get('dt'), tz_offset)}):")
         lines.append(f"  Summary: {today.get('summary', 'No summary available.')}")
-        lines.append(f"  High: {format_temperature(today.get('temp', {}).get('max'))}, "
-                    f"Low for tonight: {format_temperature(today.get('temp', {}).get('min'))}.")
+        high_temp = f"{round(today.get('temp', {}).get('max'))}°F" if today.get('temp', {}).get('max') else "N/A"
+        low_temp = f"{round(today.get('temp', {}).get('min'))}°F" if today.get('temp', {}).get('min') else "N/A"
+        lines.append(f"  High: {high_temp}, Low for tonight: {low_temp}.")
 
         # Precipitation forecast
-        weather_types = [w.get("main") for w in today.get("weather", [])]
-        precip_desc = describe_precipitation(
-            today.get("pop", 0),
-            today.get("rain"),
-            today.get("snow"),
-            weather_types
-        )
+        pop = today.get("pop", 0)
+        if pop < 0.1:
+            precip_desc = "Low chance of precipitation."
+        else:
+            precip_desc = f"{int(pop * 100)}% chance of precipitation"
+            rain_mm = today.get("rain")
+            snow_mm = today.get("snow")
+            if rain_mm and rain_mm > 0:
+                precip_desc += f" ({rain_mm}mm rain)"
+            if snow_mm and snow_mm > 0:
+                precip_desc += f" ({snow_mm}mm snow)"
+            precip_desc += "."
         lines.append(f"  Precipitation: {precip_desc}")
+
         lines.append(f"  Day Wind: {describe_wind(today.get('wind_speed'), today.get('wind_gust'))}")
-        # lines.append(f"  Max UV Index: {describe_uvi(today.get('uvi'))}.")
 
     # Hourly forecast for next 8 hours
     hourly = api_data.get("hourly", [])
     if hourly:
         lines.append("\nNEXT 8 HOURS:")
         for hour_data in hourly[:8]:  # Next 8 hours
-            hour_time = format_time(hour_data.get('dt'), tz_offset, '%I:%M %p')
-            temp = format_temperature(hour_data.get('temp'))
+            hour_time = format_time(hour_data.get('dt'), tz_offset)
+            temp = f"{round(hour_data.get('temp'))}°F" if hour_data.get('temp') else "N/A"
             weather_desc = hour_data.get('weather', [{}])[0].get('description', 'N/A')
 
             # Build hourly line
             hour_line = f"  {hour_time}: {weather_desc} at {temp}"
 
             # mention UVI if relevant
-            if float(hour_data.get('uvi', 0)) >= 3:
-                uvi_desc = describe_uvi(hour_data.get('uvi'))
-                hour_line += f" ({uvi_desc})"
+            uvi = hour_data.get('uvi', 0)
+            if float(uvi) >= 3:
+                hour_line += f" ({describe_uvi(uvi)})"
 
             # Add precipitation if present
             pop = hour_data.get('pop', 0)
@@ -249,19 +192,24 @@ def format_weather_for_llm(api_data, yesterday_data=None):
         for day in daily[1:5]:  # Next 4 days after today
             lines.append(f"\n  {get_day_name(day.get('dt'), tz_offset)}:")
             lines.append(f"    Summary: {day.get('summary', 'No summary available.')}")
-            lines.append(f"    High: {format_temperature(day.get('temp', {}).get('max'))}, "
-                        f"Low: {format_temperature(day.get('temp', {}).get('min'))}.")
+            high_temp = f"{round(day.get('temp', {}).get('max'))}°F" if day.get('temp', {}).get('max') else "N/A"
+            low_temp = f"{round(day.get('temp', {}).get('min'))}°F" if day.get('temp', {}).get('min') else "N/A"
+            lines.append(f"    High: {high_temp}, Low: {low_temp}.")
 
-            weather_types = [w.get("main") for w in day.get("weather", [])]
-            precip_desc = describe_precipitation(
-                day.get("pop", 0),
-                day.get("rain"),
-                day.get("snow"),
-                weather_types
-            )
+            pop = day.get("pop", 0)
+            if pop < 0.1:
+                precip_desc = "Low chance of precipitation."
+            else:
+                precip_desc = f"{int(pop * 100)}% chance of precipitation"
+                rain_mm = day.get("rain")
+                snow_mm = day.get("snow")
+                if rain_mm and rain_mm > 0:
+                    precip_desc += f" ({rain_mm}mm rain)"
+                if snow_mm and snow_mm > 0:
+                    precip_desc += f" ({snow_mm}mm snow)"
+                precip_desc += "."
             lines.append(f"    Precipitation: {precip_desc}")
-            lines.append(f"    Wind: {describe_wind(day.get('wind_speed'), day.get('wind_gust'))}.")
-            # lines.append(f"    Max UV Index: {describe_uvi(day.get('uvi'))}.")
+            lines.append(f"    Wind: {describe_wind(day.get('wind_speed'), day.get('wind_gust'))}")
     else:
         lines.append("  No extended forecast available.")
 
@@ -348,13 +296,9 @@ def generate_weather_description(weather_data, api_key=None,
     if prompt_override:
         prompt_path = Path(prompt_override)
         if prompt_path.is_file():
-            try:
-                system_prompt = prompt_path.read_text()
-                prompt_source_message = f"Using prompt loaded from file: {prompt_override}"
-            except Exception as e:
-                print(f"Warning: Could not read prompt file '{prompt_override}'. Using default prompt. Error: {e}", file=sys.stderr)
+            system_prompt = prompt_path.read_text()
+            prompt_source_message = f"Using prompt loaded from file: {prompt_override}"
         else:
-            # Use the provided string directly if it's not a file
             system_prompt = prompt_override
             prompt_source_message = "Using prompt text provided via --prompt option."
 
@@ -368,16 +312,13 @@ def generate_weather_description(weather_data, api_key=None,
     # Fetch yesterday's weather if requested and coordinates are available
     yesterday_data = None
     if include_yesterday and 'lat' in weather_data and 'lon' in weather_data:
-        try:
-            yesterday_data = fetch_yesterday_weather(
-                weather_data['lat'],
-                weather_data['lon'],
-                WEATHER_API_KEY
-            )
-            if yesterday_data:
-                print(f"Successfully fetched yesterday's weather: {yesterday_data['date']}")
-        except Exception as e:
-            print(f"Warning: Could not fetch yesterday's weather: {e}", file=sys.stderr)
+        yesterday_data = fetch_yesterday_weather(
+            weather_data['lat'],
+            weather_data['lon'],
+            WEATHER_API_KEY
+        )
+        if yesterday_data:
+            print(f"Successfully fetched yesterday's weather: {yesterday_data['date']}")
 
     # Format weather data as text for LLM
     llm_context = format_weather_for_llm(weather_data, yesterday_data)

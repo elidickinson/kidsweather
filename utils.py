@@ -14,10 +14,6 @@ from config import API_CACHE_DIR, API_CACHE_TIME, LLM_LOG_DB_FILE
 # Initialize shared cache
 cache = diskcache.Cache(API_CACHE_DIR)
 
-def format_time(timestamp, timezone_offset=0):
-    """Convert Unix timestamp to human-readable time in local timezone."""
-    dt = datetime.fromtimestamp(timestamp, tz=timezone.utc) + timedelta(seconds=timezone_offset)
-    return dt.strftime("%I:%M %p")  # Format: "01:30 PM"
 
 def format_alert_time(timestamp, timezone_offset):
     """Format alert time, showing date if not today."""
@@ -57,24 +53,18 @@ def init_llm_log_db():
 
 def log_llm_interaction(weather_input, system_prompt, model_used, llm_output_raw, description, source, llm_context=None):
     """Logs the details of an LLM interaction to the database."""
-    try:
-        conn = sqlite3.connect(LLM_LOG_DB_FILE)
-        cursor = conn.cursor()
-        # Ensure complex objects are stored as JSON strings
-        weather_input_json = json.dumps(weather_input)
-        llm_output_json = json.dumps(llm_output_raw)
+    conn = sqlite3.connect(LLM_LOG_DB_FILE)
+    cursor = conn.cursor()
+    weather_input_json = json.dumps(weather_input)
+    llm_output_json = json.dumps(llm_output_raw)
 
-        cursor.execute('''
-            INSERT INTO llm_interactions (location_name, weather_input, llm_context, system_prompt, model_used, llm_output, description, source)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ''', ('N/A', weather_input_json, llm_context, system_prompt, model_used, llm_output_json, description, source))
-        conn.commit()
-        conn.close()
-        print(f"Logged LLM interaction from {source}")
-    except sqlite3.Error as e:
-        print(f"Database error during logging: {e}", file=sys.stderr)
-    except Exception as e:
-        print(f"Error logging LLM interaction: {e}", file=sys.stderr)
+    cursor.execute('''
+        INSERT INTO llm_interactions (location_name, weather_input, llm_context, system_prompt, model_used, llm_output, description, source)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ''', ('N/A', weather_input_json, llm_context, system_prompt, model_used, llm_output_json, description, source))
+    conn.commit()
+    conn.close()
+    print(f"Logged LLM interaction from {source}")
 
 def save_weather_data(data, filename=None, data_dir=None):
     """Save weather data to a file for testing."""
@@ -111,16 +101,8 @@ def load_system_prompt(prompt_file=None):
     if not prompt_file:
         prompt_file = DEFAULT_PROMPT_FILE
 
-    try:
-        with open(prompt_file, 'r') as f:
-            return f.read()
-    except FileNotFoundError:
-        print(f"Error: Prompt file not found at {prompt_file}", file=sys.stderr)
-        # Fallback to a minimal default prompt if file is missing
-        return "You are a helpful weather assistant providing JSON output."
-    except Exception as e:
-        print(f"Error reading prompt file {prompt_file}: {e}", file=sys.stderr)
-        return "You are a helpful weather assistant providing JSON output."
+    with open(prompt_file, 'r') as f:
+        return f.read()
 
 def get_cache_key(prefix, *args):
     """Generate a consistent cache key from a prefix and arguments."""

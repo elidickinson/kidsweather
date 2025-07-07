@@ -128,15 +128,9 @@ def main(log_id, prompt, new_model, show_context):
         if prompt:
             prompt_path = Path(prompt)
             if prompt_path.is_file():
-                try:
-                    prompt_to_use = prompt_path.read_text()
-                    prompt_source_message = f"Using NEW prompt loaded from file: {prompt}"
-                except Exception as e:
-                    print(f"Warning: Could not read prompt file '{prompt}'. Using original prompt. Error: {e}", file=sys.stderr)
-                    prompt_to_use = original_prompt  # Fallback to original on read error
-                    prompt_source_message = "Error reading prompt file. Using ORIGINAL prompt from log."
+                prompt_to_use = prompt_path.read_text()
+                prompt_source_message = f"Using NEW prompt loaded from file: {prompt}"
             else:
-                # Use the provided string directly if it's not a file
                 prompt_to_use = prompt
                 prompt_source_message = "Using NEW prompt text provided via --prompt option."
 
