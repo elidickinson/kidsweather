@@ -1,10 +1,25 @@
 # Kid-Friendly Weather Description Service
 
-A simple Python service that generates natural, kid-friendly weather descriptions using OpenWeatherMap and any OpenAI-compatible LLM API. It includes a command-line script, a Flask web application, API caching, and LLM interaction logging/replay capabilities.
+A Python service that generates natural, kid-friendly weather descriptions using OpenWeatherMap and an LLM API (can be a small, self hosted model).
 
-## What's It For?
+I wrote a [blog post](https://eli.pizza/posts/eink-weather-display-for-kids/) about how I use it as part of a weather eInk display:
 
-I built it as part of a *[big eInk weather display](https://eli.pizza/posts/eink-weather-display-for-kids/)* to generate a weather forecast that my kids could understand.
+<img src="weather-display.jpeg" alt="Large eInk weather display showing kid-friendly weather forecast" width="400">
+
+The display is driven by a $40 single board computer and shows weather forecasts that can be easily understood.
+
+---
+
+## What It Does
+
+Transforms complex weather data into simple, engaging descriptions that kids can understand. Instead of "Partly cloudy with 70% chance of precipitation," you get "It might rain later - maybe bring an umbrella! 🌧️"
+
+The service includes:
+- Command-line weather reports
+- Flask web application with HTML interface
+- API caching for performance
+- LLM interaction logging and replay capabilities
+- Support for multiple LLM providers with automatic fallback
 
 ## Requirements
 
@@ -20,163 +35,79 @@ I built it as part of a *[big eInk weather display](https://eli.pizza/posts/eink
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-2. Clone this repository or download the script
+2. Clone this repository
 
-3. Create and activate a virtual environment with uv:
+3. Create and activate a virtual environment:
 ```bash
 uv venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+```
+
 4. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-5. Create a `.env` file with your API keys:
+5. Copy the example environment file and configure your API keys:
 ```bash
-# Weather API (required)
-WEATHER_API_KEY=your_openweathermap_key
-
-# LLM Configuration (all three required - see examples below)
-LLM_API_URL=<your-api-endpoint>
-LLM_API_KEY=<your-api-key>
-LLM_MODEL=<model-name>
-LLM_SUPPORTS_JSON_MODE=true  # Optional, defaults to true. Set to false for LM Studio
-
-# Fallback LLM Configuration (optional - all four must be set if using)
-FALLBACK_LLM_API_URL=<fallback-api-endpoint>
-FALLBACK_LLM_API_KEY=<fallback-api-key>
-FALLBACK_LLM_MODEL=<fallback-model-name>
-FALLBACK_LLM_SUPPORTS_JSON_MODE=true  # Optional, defaults to true
+cp .env.example .env
+# Edit .env with your API keys
 ```
 
-## LLM Provider Configuration
-
-Choose one of the following providers:
-
-### DeepSeek
-```bash
-LLM_API_URL=https://api.deepseek.com/chat/completions
-LLM_API_KEY=sk-your-deepseek-api-key
-LLM_MODEL=deepseek-chat
-```
-
-### OpenAI
-```bash
-LLM_API_URL=https://api.openai.com/v1/chat/completions
-LLM_API_KEY=sk-your-openai-api-key
-LLM_MODEL=gpt-3.5-turbo  # or gpt-4
-```
-
-### OpenRouter
-```bash
-LLM_API_URL=https://openrouter.ai/api/v1/chat/completions
-LLM_API_KEY=sk-or-v1-your-openrouter-key
-LLM_MODEL=anthropic/claude-3-haiku  # or any model from openrouter.ai/models
-```
-
-### LM Studio (Local)
-```bash
-LLM_API_URL=http://localhost:1234/v1/chat/completions
-LLM_API_KEY=lm-studio
-LLM_MODEL=TheBloke/Mistral-7B-Instruct-v0.2-GGUF
-LLM_SUPPORTS_JSON_MODE=false  # LM Studio doesn't support response_format
-```
-
-### Fallback Configuration Example
-
-If your primary LLM provider fails, the system will automatically try the fallback:
-
-```bash
-# Primary: DeepSeek
-LLM_API_URL=https://api.deepseek.com/chat/completions
-LLM_API_KEY=sk-your-deepseek-api-key
-LLM_MODEL=deepseek-chat
-
-# Fallback: OpenRouter
-FALLBACK_LLM_API_URL=https://openrouter.ai/api/v1/chat/completions
-FALLBACK_LLM_API_KEY=sk-or-v1-your-openrouter-key
-FALLBACK_LLM_MODEL=anthropic/claude-3-haiku
-```
 ## Usage
 
-### Command-Line Script (`weather_cli.py`)
+### Command-Line Script
 
-Generate a report for a specific location:
+Generate a weather report for a specific location:
 ```bash
 uv run ./weather_cli.py --lat 38.9 --lon -77.0
 ```
 
-Load data from a test file (e.g., `test_data/dc1.json`):
+Load test data from a file:
 ```bash
 uv run ./weather_cli.py --load dc1
 ```
 
-Save the fetched weather data for later use (e.g. for testing):
+Save weather data for testing:
 ```bash
 uv run ./weather_cli.py --lat 38.9 --lon -77.0 --save dc_latest
 ```
 
-Log the LLM interaction to `llm_log.sqlite3`:
+Log LLM interactions:
 ```bash
 uv run ./weather_cli.py --lat 38.9 --lon -77.0 --log-interactions
 ```
 
-Save the output description or full JSON:
-```bash
-uv run ./weather_cli.py --lat 38.9 --lon -77.0 --save-txt report_desc
-uv run ./weather_cli.py --lat 38.9 --lon -77.0 --save-json report_full
-```
-
-**Arguments:**
-- `--lat`: Latitude (required unless using `--load`)
-- `--lon`: Longitude (required unless using `--load`)
-- `--load`: Load weather data from `test_data/<name>.json`
-- `--save`: Save fetched weather data to `test_data/<name>.json`
-- `--log-interactions`: Log LLM call details to `llm_log.sqlite3`
-- `--save-json`: Save the final JSON report to `<name>.json`
-- `--save-txt`: Save just the description text to `<name>.txt`
-
-### Flask Web App (`app.py`)
+### Flask Web App
 
 Run the web server (defaults to port 5001):
 ```bash
 uv run app.py
 ```
+
 Then open http://127.0.0.1:5001 in your browser.
 
-The app provides endpoints:
+Available endpoints:
 - `/`: HTML weather report
 - `/weather.json`: JSON weather report
 - `/weather.txt`: Plain text weather description
 
-Render the HTML directly to a file:
+Render HTML directly to a file:
 ```bash
 uv run app.py --render page.html
 ```
 
-### LLM Replay Script (`replay.py`)
+### LLM Replay Script
 
-Replay a specific logged LLM interaction (e.g., log ID 5) using the original prompt and model:
+Replay logged LLM interactions with different prompts or models:
 ```bash
 uv run replay.py --log-id 5
-```
-
-Replay log ID 5 using a different model:
-```bash
 uv run replay.py --log-id 5 --new-model deepseek-coder
+uv run replay.py --log-id 5 --prompt "You are a pirate weather forecaster."
 ```
 
-Replay log ID 5 using a new system prompt text:
-```bash
-uv run replay.py --log-id 5 --prompt "You are a pirate weather forecaster. Be funny. Respond in JSON."
-```
+## Example Output
 
-**Arguments:**
-- `--log-id`: The ID from the `llm_interactions` table to replay (required).
-- `--prompt`: New system prompt text to use for the replay. Overrides the original prompt from the log.
-- `--new-model`: Name of a model to use for the replay. Overrides the original model from the log.
-
-### Example Output
 ```json
 {
   "description": "It's cool right now, maybe wear a light jacket. 🧥 The rest of the day looks cloudy but nice!",
@@ -199,18 +130,15 @@ uv run replay.py --log-id 5 --prompt "You are a pirate weather forecaster. Be fu
 
 ## API Keys
 
-1. **OpenWeatherMap:** Get a free API key at https://openweathermap.org/api (One Call API 3.0 is used)
-2. **LLM Provider:** Choose from:
-   - DeepSeek: https://platform.deepseek.com/
-   - OpenAI: https://platform.openai.com/
-   - OpenRouter: https://openrouter.ai/
+1. **OpenWeatherMap:** Get a free API key at https://openweathermap.org/api
+2. **LLM Provider:** Choose from DeepSeek, OpenAI, OpenRouter, or any OpenAI-compatible API
 
-## Notes
+## Technical Notes
 
 - Uses OpenWeatherMap's One Call API 3.0
 - Supports any OpenAI-compatible chat completions API
 - Temperatures are in Fahrenheit
-- Caches API responses for 10 minutes using `diskcache` in the `api_cache/` directory
-- Logs LLM interactions to `llm_log.sqlite3` when run via Flask or with the `--log-interactions` flag
-- The `replay.py` script allows re-running logged interactions with different prompts or models
-- Includes a Flask web application (`app.py`) running on port 5001
+- Caches API responses for 10 minutes using `diskcache`
+- Logs LLM interactions to `llm_log.sqlite3`
+- Includes automatic fallback between LLM providers
+- Flask web application runs on port 5001
