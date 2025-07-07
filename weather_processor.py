@@ -96,9 +96,6 @@ def format_weather_for_llm(api_data, yesterday_data=None):
         lines.append(f"  Average Temperature: {avg_temp} (felt like {feels_like})")
         lines.append(f"  High: {high_temp}, Low: {low_temp}")
         lines.append(f"  Main Condition: {yesterday_data['main_condition']}")
-        if yesterday_data.get('conditions_breakdown'):
-            conditions = [f"{cond}: {count} hours" for cond, count in yesterday_data['conditions_breakdown'].items()]
-            lines.append(f"  Conditions Throughout Day: {', '.join(conditions)}")
 
     # Current conditions
     current = api_data.get("current", {})

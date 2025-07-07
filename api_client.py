@@ -128,12 +128,11 @@ def fetch_yesterday_weather(lat, lon, api_key):
                 "high_temp": round(weather_data['temp'], 1) if 'temp' in weather_data else None,  # Using same temp since we only have one data point
                 "low_temp": round(weather_data['temp'], 1) if 'temp' in weather_data else None,
                 "avg_feels_like": round(weather_data['feels_like'], 1) if 'feels_like' in weather_data else None,
-                "main_condition": main_condition,
-                "conditions_breakdown": {main_condition: 1}  # Single data point
+                "main_condition": main_condition
             }
 
             # Cache the processed result
-            cache.set(cache_key, yesterday_summary, expire=API_CACHE_TIME * 6)  # Cache for 1 hour
+            cache.set(cache_key, yesterday_summary, expire=API_CACHE_TIME * 6)  # Cache for 1 hour with default cache time
             return yesterday_summary
 
         print("No historical data available in response", file=sys.stderr)
