@@ -19,6 +19,7 @@ Style guide:
 - Avoid excessive exclamation points
 - In describing how the weather feels, take precipitation into account.
 - Can include up to 2 relevant emojis per description and 0 or 1 per daily forecast
+- It's ok to have a little fun with it!
 
 Your response MUST be valid JSON with this exact structure:
 {

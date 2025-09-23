@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""
-Command-line interface for Kids Weather application.
-
-This script provides command-line functionality for generating
-kid-friendly weather reports.
-"""
+"""Command-line interface for Kids Weather application."""
 # /// script
 # requires-python = ">=3.9"
 # dependencies = [
@@ -15,13 +10,15 @@ kid-friendly weather reports.
 # ]
 # ///
 
-import sys
 import json
+
 import click
 from dotenv import load_dotenv
 
-from utils import save_weather_data, init_llm_log_db
-from weather_processor import get_weather_report
+from settings import load_settings
+from utils import load_weather_data, save_weather_data
+from weather_service import build_default_service
+
 
 @click.command()
 @click.option('--lat', type=float, help='Latitude')
@@ -32,74 +29,96 @@ from weather_processor import get_weather_report
 @click.option('--save-txt', type=str, help='Save description to text file (without .txt suffix)')
 @click.option('--log-interactions', is_flag=True, default=False, help='Log LLM interaction details to the database.')
 @click.option('--prompt', type=str, help='Custom system prompt text or path to a prompt file.')
-def main(lat, lon, save, load, save_json, save_txt, log_interactions, prompt):
+@click.option('--model', type=str, help='Override the LLM model for this invocation.')
+@click.option('--verbose', is_flag=True, default=False, help='Show progress details and the LLM context dump.')
+def main(lat, lon, save, load, save_json, save_txt, log_interactions, prompt, model, verbose):
     """Generate a kid-friendly weather report."""
-    try:
-        source = 'script'  # Define source for script execution
 
-        if load:
-            # Use mock data from file
-            result = get_weather_report(
-                None, None,
-                mock_file=f"{load}.json",
-                log_interaction=log_interactions,
-                source=source,
-                prompt_override=prompt
-            )
-        else:
-            if not lat or not lon:
-                raise click.UsageError("Latitude and longitude are required when not loading from file")
+    if verbose:
+        click.echo('Loading settings...')
+    load_settings()  # Ensure environment variables are available.
+    if verbose:
+        click.echo('Initialising weather report service...')
+    service = build_default_service()
 
-            # Save raw weather data if requested
-            if save:
-                from api_client import fetch_weather_data
-                from config import WEATHER_API_KEY
+    weather_payload = None
+    if load:
+        if verbose:
+            click.echo(f"Loading weather data from saved fixture: {load}.json")
+        weather_payload = load_weather_data(f"{load}.json")
+        if verbose:
+            click.echo('Generating report from saved data via LLM...')
+        report = service.build_report(
+            latitude=None,
+            longitude=None,
+            weather_data_override=weather_payload,
+            log_interaction=log_interactions,
+            source='script',
+            prompt_override=prompt,
+            model_override=model,
+        )
+    else:
+        if lat is None or lon is None:
+            raise click.UsageError("Latitude and longitude are required when not loading from file")
 
-                if not WEATHER_API_KEY:
-                    raise ValueError("Missing WEATHER_API_KEY in environment variables")
+        if save:
+            if verbose:
+                click.echo('Fetching live weather data before saving snapshot...')
+            weather_payload = service.weather_client.fetch_current(lat, lon)
+            save_path = save_weather_data(weather_payload, f"{save}.json")
+            click.echo(f"Saved weather data to: {save_path}")
 
-                raw_weather_data = fetch_weather_data(lat, lon, WEATHER_API_KEY)
-                filename = f"{save}.json"
-                save_path = save_weather_data(raw_weather_data, filename)
-                print(f"Saved weather data to: {save_path}")
+        if verbose:
+            message = 'Fetching live weather data and requesting LLM summary...'
+            if weather_payload is not None:
+                message = 'Generating report from saved live data via LLM...'
+            click.echo(message)
+        report = service.build_report(
+            latitude=lat,
+            longitude=lon,
+            weather_data_override=weather_payload,
+            log_interaction=log_interactions,
+            source='script',
+            prompt_override=prompt,
+            model_override=model,
+        )
 
-            # Get complete weather report
-            result = get_weather_report(
-                lat, lon,
-                log_interaction=log_interactions,
-                source=source,
-                prompt_override=prompt
-            )
+    if verbose:
+        prompt_text = (service.last_system_prompt or '').strip()
+        context_text = (service.last_llm_context or '').strip()
+        click.echo("\nSystem Prompt:\n" + (prompt_text or '[prompt unavailable]'))
+        click.echo("\nLLM Context:\n" + (context_text or '[context unavailable]'))
+        click.echo("\n" + '-' * 60)
 
-        # Print results to terminal
-        print(f"\nWeather Report:")
-        print(f"\nDescription: {result['description']}")
-        print(f"\nCurrent Temperature: {result['temperature']}°F (Feels like: {result['feels_like']}°F)")
-        print(f"Conditions: {result['conditions']}")
-        print(f"Today's Range: High {result['high_temp']}°F / Low {result['low_temp']}°F")
+    click.echo("\nWeather Report:")
+    click.echo(f"\nDescription: {report['description']}")
+    click.echo(f"\nCurrent Temperature: {report['temperature']}°F (Feels like: {report['feels_like']}°F)")
+    click.echo(f"Conditions: {report['conditions']}")
+    click.echo(f"Today's Range: High {report['high_temp']}°F / Low {report['low_temp']}°F")
 
-        for day, forecast in result['daily_forecasts_llm'].items():
-            print(f"{day}: {forecast}")
+    daily_forecasts = report.get('daily_forecasts_llm', {})
+    if isinstance(daily_forecasts, dict):
+        for day, forecast in daily_forecasts.items():
+            click.echo(f"{day}: {forecast}")
+    elif isinstance(daily_forecasts, list):
+        for idx, forecast in enumerate(daily_forecasts, start=1):
+            click.echo(f"Day {idx}: {forecast}")
 
-        if result['alerts']:
-            print(f"\nAlerts: {', '.join(result['alerts'])}")
+    if report.get('alerts'):
+        click.echo(f"\nAlerts: {', '.join(report['alerts'])}")
 
-        # Save output files if requested
-        if save_json:
-            with open(f"{save_json}.json", 'w') as f:
-                json.dump(result, f, indent=2)
-            print(f"\nSaved full output to: {save_json}.json")
+    if save_json:
+        with open(f"{save_json}.json", 'w') as fh:
+            json.dump(report, fh, indent=2)
+        click.echo(f"\nSaved full output to: {save_json}.json")
 
-        if save_txt:
-            with open(f"{save_txt}.txt", 'w') as f:
-                f.write(result['description'])
-            print(f"\nSaved description to: {save_txt}.txt")
+    if save_txt:
+        with open(f"{save_txt}.txt", 'w') as fh:
+            fh.write(report['description'])
+        click.echo(f"\nSaved description to: {save_txt}.txt")
 
-    except Exception as e:
-        print(f"Error: {str(e)}", file=sys.stderr)
-        sys.exit(1)
+
 
 if __name__ == '__main__':
     load_dotenv()
-    init_llm_log_db()  # Ensure LLM log DB is initialized
     main()

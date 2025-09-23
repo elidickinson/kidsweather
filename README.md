@@ -17,6 +17,7 @@ Transforms complex weather data into simple, engaging descriptions that kids can
 The service includes:
 - Command-line weather reports
 - Flask web application with HTML interface
+- A shared service layer (`WeatherReportService`) used by every entrypoint
 - API caching for performance
 - LLM interaction logging and replay capabilities
 - Support for multiple LLM providers with automatic fallback
@@ -63,12 +64,12 @@ Generate a weather report for a specific location:
 uv run ./weather_cli.py --lat 38.9 --lon -77.0
 ```
 
-Load test data from a file:
+Load test data from a file (files live in `test_data/` by default):
 ```bash
 uv run ./weather_cli.py --load dc1
 ```
 
-Save weather data for testing:
+Save weather data for testing (writes to `test_data/` unless you supply `--save` with a different path):
 ```bash
 uv run ./weather_cli.py --lat 38.9 --lon -77.0 --save dc_latest
 ```
@@ -76,6 +77,11 @@ uv run ./weather_cli.py --lat 38.9 --lon -77.0 --save dc_latest
 Log LLM interactions:
 ```bash
 uv run ./weather_cli.py --lat 38.9 --lon -77.0 --log-interactions
+```
+
+See what the model was told:
+```bash
+uv run ./weather_cli.py --lat 38.9 --lon -77.0 --verbose
 ```
 
 ### Flask Web App
@@ -133,12 +139,23 @@ uv run replay.py --log-id 5 --prompt "You are a pirate weather forecaster."
 1. **OpenWeatherMap:** Get a free API key at https://openweathermap.org/api
 2. **LLM Provider:** Choose from DeepSeek, OpenAI, OpenRouter, or any OpenAI-compatible API
 
+## Architecture Overview
+
+- **Settings** (`settings.py`): loads environment variables into a single dataclass tree and ensures required directories exist.
+- **Weather client** (`weather_client.py`): fetches current conditions and optional historical summaries, applying diskcache when configured.
+- **LLM client** (`llm_client.py`): wraps the primary and optional fallback providers, normalising JSON responses and caching successful calls.
+- **Weather formatter** (`weather_formatter.py`): prepares both the LLM prompt context and the data needed for display.
+- **Weather report service** (`weather_service.py`): orchestrates data fetch, formatting, LLM generation, logging, and assembles the final payload used by Flask, the CLI, and replay tooling.
+- **Logging** (`llm_logging.py`): persists interactions to SQLite for replay.
+- **Utilities** (`utils.py`, `cache_provider.py`): helper routines for fixtures and cache construction.
+
 ## Technical Notes
 
 - Uses OpenWeatherMap's One Call API 3.0
 - Supports any OpenAI-compatible chat completions API
+- Configuration lives in `settings.py` and is shared across every entrypoint
 - Temperatures are in Fahrenheit
-- Caches API responses for 10 minutes using `diskcache`
-- Logs LLM interactions to `llm_log.sqlite3`
-- Includes automatic fallback between LLM providers
+- Caches API and LLM responses for 10 minutes using `diskcache`
+- Logs LLM interactions to `llm_log.sqlite3` for replay
+- Includes optional automatic fallback between LLM providers
 - Flask web application runs on port 5001

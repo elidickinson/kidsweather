@@ -1,128 +1,34 @@
-#!/usr/bin/env python3
-"""
-Utility functions and shared tools for the Kids Weather application.
-"""
+"""Utility helpers for reading and writing test fixtures."""
+from __future__ import annotations
+
 import json
-import hashlib
-import sqlite3
-import sys
-from datetime import datetime, timedelta, timezone
-import diskcache
+from datetime import datetime
+from pathlib import Path
+from typing import Optional
 
-from config import API_CACHE_DIR, API_CACHE_TIME, LLM_LOG_DB_FILE
-
-# Initialize shared cache
-cache = diskcache.Cache(API_CACHE_DIR)
+from settings import load_settings
 
 
-def format_alert_time(timestamp, timezone_offset):
-    """Format alert time, showing date if not today."""
-    dt = datetime.fromtimestamp(timestamp, tz=timezone.utc) + timedelta(seconds=timezone_offset)
-    today = datetime.now(timezone(timedelta(seconds=timezone_offset))).date()
-    if dt.date() == today:
-        return dt.strftime("%-I%p")
-    return dt.strftime("%-I%p %a")
+def save_weather_data(data: dict, filename: Optional[str] = None,*, directory: Optional[Path] = None) -> Path:
+    """Persist raw weather data to disk for later replay or testing."""
 
-def init_llm_log_db():
-    """Initialize the SQLite database for logging LLM interactions."""
-    conn = sqlite3.connect(LLM_LOG_DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS llm_interactions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-            location_name TEXT,
-            weather_input TEXT, -- JSON string of the raw weather API data
-            llm_context TEXT,   -- The exact formatted context sent to LLM
-            system_prompt TEXT,
-            model_used TEXT,
-            llm_output TEXT,    -- JSON string of the raw LLM response content
-            description TEXT,   -- Extracted description text
-            source TEXT         -- e.g., 'flask', 'script', 'replay'
-        )
-    ''')
-
-    # Check if llm_context column exists, add it if not (for existing databases)
-    cursor.execute("PRAGMA table_info(llm_interactions)")
-    columns = [row[1] for row in cursor.fetchall()]
-    if 'llm_context' not in columns:
-        cursor.execute('ALTER TABLE llm_interactions ADD COLUMN llm_context TEXT')
-
-    conn.commit()
-    conn.close()
-
-def log_llm_interaction(weather_input, system_prompt, model_used, llm_output_raw, description, source, llm_context=None):
-    """Logs the details of an LLM interaction to the database."""
-    conn = sqlite3.connect(LLM_LOG_DB_FILE)
-    cursor = conn.cursor()
-    weather_input_json = json.dumps(weather_input)
-    llm_output_json = json.dumps(llm_output_raw)
-
-    cursor.execute('''
-        INSERT INTO llm_interactions (location_name, weather_input, llm_context, system_prompt, model_used, llm_output, description, source)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    ''', ('N/A', weather_input_json, llm_context, system_prompt, model_used, llm_output_json, description, source))
-    conn.commit()
-    conn.close()
-    print(f"Logged LLM interaction from {source}")
-
-def save_weather_data(data, filename=None, data_dir=None):
-    """Save weather data to a file for testing."""
-    from config import TEST_DATA_DIR
-
-    if not data_dir:
-        data_dir = TEST_DATA_DIR
+    settings = load_settings()
+    target_dir = directory or settings.paths.test_data_dir
+    target_dir.mkdir(parents=True, exist_ok=True)
 
     if not filename:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"weather_{timestamp}.json"
 
-    filepath = data_dir / filename
-    with open(filepath, 'w') as f:
-        json.dump(data, f, indent=2)
-    return str(filepath)
+    path = target_dir / filename
+    path.write_text(json.dumps(data, indent=2))
+    return path
 
-def load_weather_data(filename, data_dir=None):
-    """Load weather data from a test file."""
-    from config import TEST_DATA_DIR
 
-    if not data_dir:
-        data_dir = TEST_DATA_DIR
+def load_weather_data(filename: str,*, directory: Optional[Path] = None) -> dict:
+    """Load weather data previously saved for deterministic runs."""
 
-    filepath = data_dir / filename
-    print(f"Loading data from {filepath}")
-    with open(filepath, 'r') as f:
-        return json.load(f)
-
-def load_system_prompt(prompt_file=None):
-    """Loads the system prompt from the specified file."""
-    from config import DEFAULT_PROMPT_FILE
-
-    if not prompt_file:
-        prompt_file = DEFAULT_PROMPT_FILE
-
-    with open(prompt_file, 'r') as f:
-        return f.read()
-
-def get_cache_key(prefix, *args):
-    """Generate a consistent cache key from a prefix and arguments."""
-    key_parts = [prefix]
-
-    for arg in args:
-        if isinstance(arg, dict):
-            # Sort dictionary keys for consistent hashing
-            arg_hash = hashlib.sha256(json.dumps(arg, sort_keys=True).encode()).hexdigest()[:16]
-            key_parts.append(arg_hash)
-        elif isinstance(arg, (list, tuple)):
-            # Hash list/tuple contents
-            arg_hash = hashlib.sha256(json.dumps(arg).encode()).hexdigest()[:16]
-            key_parts.append(arg_hash)
-        elif isinstance(arg, str) and len(arg) > 50:
-            # Hash long strings
-            arg_hash = hashlib.sha256(arg.encode()).hexdigest()[:16]
-            key_parts.append(arg_hash)
-        else:
-            # Use short strings and numbers directly
-            key_parts.append(str(arg))
-
-    return "_".join(key_parts)
+    settings = load_settings()
+    target_dir = directory or settings.paths.test_data_dir
+    path = target_dir / filename
+    return json.loads(path.read_text())
