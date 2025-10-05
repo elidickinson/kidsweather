@@ -8,6 +8,8 @@ I wrote a [blog post](https://eli.pizza/posts/eink-weather-display-for-kids/) ab
 
 The display is driven by a $40 single board computer and shows weather forecasts that can be easily understood.
 
+
+
 ---
 
 ## What It Does
@@ -59,36 +61,38 @@ cp .env.example .env
 
 ### Command-Line Script
 
+Before running these commands, make sure your `.env` file is properly configured with API keys as described in the Installation section.
+
 Generate a weather report for a specific location:
 ```bash
-uv run ./weather_cli.py --lat 38.9 --lon -77.0
+uv run python -m kidsweather --lat 38.9 --lon -77.0
 ```
 
 Load test data from a file (files live in `test_data/` by default):
 ```bash
-uv run ./weather_cli.py --load dc1
+uv run python -m kidsweather --load dc1
 ```
 
 Save weather data for testing (writes to `test_data/` unless you supply `--save` with a different path):
 ```bash
-uv run ./weather_cli.py --lat 38.9 --lon -77.0 --save dc_latest
+uv run python -m kidsweather --lat 38.9 --lon -77.0 --save dc_latest
 ```
 
 Log LLM interactions:
 ```bash
-uv run ./weather_cli.py --lat 38.9 --lon -77.0 --log-interactions
+uv run python -m kidsweather --lat 38.9 --lon -77.0 --log-interactions
 ```
 
 See what the model was told:
 ```bash
-uv run ./weather_cli.py --lat 38.9 --lon -77.0 --verbose
+uv run python -m kidsweather --lat 38.9 --lon -77.0 --verbose
 ```
 
 ### Flask Web App
 
 Run the web server (defaults to port 5001):
 ```bash
-uv run app.py
+uv run python kidsweather/web/app.py
 ```
 
 Then open http://127.0.0.1:5001 in your browser.
@@ -100,16 +104,16 @@ Available endpoints:
 
 Render HTML directly to a file:
 ```bash
-uv run app.py --render page.html
+uv run python kidsweather/web/app.py --render page.html
 ```
 
 ### LLM Replay Script
 
 Replay logged LLM interactions with different prompts or models:
 ```bash
-uv run replay.py --log-id 5
-uv run replay.py --log-id 5 --new-model deepseek-coder
-uv run replay.py --log-id 5 --prompt "You are a pirate weather forecaster."
+uv run python replay.py --log-id 5
+uv run python replay.py --log-id 5 --new-model deepseek-coder
+uv run python replay.py --log-id 5 --prompt "You are a pirate weather forecaster."
 ```
 
 ## Example Output
