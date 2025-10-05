@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from settings import load_settings
+from ..core.settings import load_settings
 
 
 def save_weather_data(data: dict, filename: Optional[str] = None,*, directory: Optional[Path] = None) -> Path:

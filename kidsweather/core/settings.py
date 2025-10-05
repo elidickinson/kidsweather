@@ -134,7 +134,7 @@ def load_settings(env_file: Optional[str] = None) -> AppSettings:
 
     load_dotenv(env_file)  # Idempotent; safe to call repeatedly.
 
-    root_dir = Path(__file__).parent
+    root_dir = Path(__file__).parent.parent.parent
     cache_dir = root_dir / "api_cache"
     prompt_dir = root_dir / "prompts"
     test_data_dir = root_dir / "test_data"

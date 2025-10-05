@@ -15,9 +15,9 @@ import json
 import click
 from dotenv import load_dotenv
 
-from settings import load_settings
-from utils import load_weather_data, save_weather_data
-from weather_service import build_default_service
+from .core.settings import load_settings
+from .utils.file_utils import load_weather_data, save_weather_data
+from .core.service import build_default_service
 
 
 @click.command()

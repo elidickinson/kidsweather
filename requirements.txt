@@ -5,3 +5,4 @@ click
 diskcache
 feedparser
 pytz
+pytest

@@ -7,8 +7,8 @@ from typing import Any, Dict, Optional
 
 import requests
 
-from cache_provider import make_cache_key
-from settings import WeatherAPISettings
+from ..infrastructure.cache import make_cache_key
+from ..core.settings import WeatherAPISettings
 
 
 @dataclass(slots=True)
@@ -24,7 +24,7 @@ class WeatherClient:
         self.settings.require_api_key()
         cache_key = None
         if self.cache:
-            cache_key = make_cache_key("weather", lat, lon)
+            cache_key = make_cache_key("weather", [lat, lon])
             cached = self.cache.get(cache_key)
             if cached is not None:
                 return cached
@@ -53,7 +53,7 @@ class WeatherClient:
 
         cache_key = None
         if self.cache:
-            cache_key = make_cache_key("weather_yesterday", lat, lon, timestamp)
+            cache_key = make_cache_key("weather_yesterday", [lat, lon, timestamp])
             cached = self.cache.get(cache_key)
             if cached is not None:
                 return cached

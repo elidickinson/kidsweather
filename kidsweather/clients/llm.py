@@ -8,8 +8,8 @@ from typing import Any, Dict, Optional
 
 import requests
 
-from cache_provider import make_cache_key
-from settings import LLMProviderSettings
+from ..infrastructure.cache import make_cache_key
+from ..core.settings import LLMProviderSettings
 
 
 @dataclass(slots=True)
@@ -34,11 +34,13 @@ class LLMClient:
         self.primary.require_complete("primary")
         cache_keys = []
         if self.cache:
-            primary_key = make_cache_key("llm", context, system_prompt, model_override or self.primary.model)
+            model = model_override or self.primary.model or "unknown"
+            primary_key = make_cache_key("llm", [context, system_prompt, model])
             cache_keys.append(primary_key)
             if not model_override and self.fallback and self.fallback.is_configured():
+                fallback_model = self.fallback.model or "unknown"
                 cache_keys.append(
-                    make_cache_key("llm", context, system_prompt, self.fallback.model)
+                    make_cache_key("llm", [context, system_prompt, fallback_model])
                 )
             for key in cache_keys:
                 cached = self.cache.get(key)
@@ -74,7 +76,8 @@ class LLMClient:
                 ) from exc
 
         if self.cache:
-            cache_key = make_cache_key("llm", context, system_prompt, result.get("_model_used"))
+            model_used = result.get("_model_used") or "unknown"
+            cache_key = make_cache_key("llm", [context, system_prompt, model_used])
             self.cache.set(cache_key, result, expire=self.cache_ttl_seconds)
         return result
 
@@ -108,6 +111,9 @@ class LLMClient:
         }
         if provider.supports_json_mode:
             payload["response_format"] = {"type": "json_object"}
+
+        if not provider.api_url:
+            raise ValueError(f"API URL is required for {provider_label} LLM provider")
 
         response = requests.post(
             provider.api_url,

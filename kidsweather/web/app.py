@@ -15,8 +15,8 @@ from flask import Flask, jsonify, render_template
 from dotenv import load_dotenv
 import sys
 
-from settings import load_settings
-from weather_service import build_default_service
+from ..core.settings import load_settings
+from ..core.service import build_default_service
 
 app = Flask(__name__)
 

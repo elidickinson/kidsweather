@@ -22,10 +22,10 @@ def create_cache(cache_dir: Path, *, size_limit_bytes: Optional[int] = None) -> 
     """
 
     cache_dir.mkdir(parents=True, exist_ok=True)
-    cache = diskcache.Cache(cache_dir)
     if size_limit_bytes is not None:
-        cache.cull_limit = 10  # Cull aggressively when exceeding limit.
-        cache.size_limit = size_limit_bytes
+        cache = diskcache.Cache(cache_dir, size_limit=size_limit_bytes)
+    else:
+        cache = diskcache.Cache(cache_dir)
     return cache
 
 

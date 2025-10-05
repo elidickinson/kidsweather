@@ -1,0 +1,196 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+        <style>
+            .weather-container {
+                /* max-width: 800px; */
+                margin: 50px auto;
+                padding: 20px 50px;
+                font-family:
+                    'Inter',
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    'Segoe UI',
+                    Roboto,
+                    Helvetica,
+                    Arial,
+                    sans-serif,
+                    'Apple Color Emoji',
+                    'Segoe UI Emoji';
+                font-size: 3.8rem;
+            }
+
+            .weather-header {
+                margin-bottom: 1rem;
+            }
+
+            .weather-header h2 {
+                font-size: 2.7rem;
+            }
+
+            .weather-main {
+                display: grid;
+                grid-template-columns: auto 1fr;
+                gap: 1.5rem;
+                align-items: center;
+                margin-bottom: 1.5rem;
+            }
+
+            .desc {
+                font-size: 4.8rem;
+                font-weight: bolder;
+            }
+
+            .icon-header {
+                margin: 5px auto;
+                /* display: block; */
+                text-align: center;
+            }
+            .icon {
+                width: 250px;
+                height: 250px;
+                object-fit: contain;
+            }
+            .big-temp {
+                font-weight: bold;
+                font-size: 4.2rem;
+            }
+
+            .conditions, .date {
+                font-size: 4.0rem;
+                text-align: center;
+                color: #333;
+            }
+
+            .emojis {
+                font-size: 2.4rem;
+            }
+
+            .alerts {
+                margin-top: 1rem;
+                padding: 0.75rem;
+                background-color: #fff3cd;
+                border: 1px solid #ffecb5;
+                border-radius: 4px;
+                color: #664d03;
+            }
+
+            .forecast-box {
+                background: #f8f9fa; border-radius: 8px; padding: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            }
+
+            .forecast-box-desc {
+                /* margin-bottom: 0.5rem; */
+                /* color: #333; */
+                font-weight: bold;
+                font-size: 3.5rem;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="weather-container" style="">
+            <div class="weather-header">
+                <div class="date">
+                    {{ weather['last_updated'] }}
+                </div>
+                <div class="icon-header">
+                    <div style="display: flex; justify-content: center; align-items: center;">
+                        <div style="display: flex; flex-direction: column; justify-content: center; min-width: 120px; width: 35%;">
+
+                                <span class="big-temp">{{ weather['temperature'] }}°F</span>
+                                {% if 'feels_like' in weather and (weather['temperature'] - weather['feels_like'])|abs >= 10 %}
+                                    (feels like {{ weather['feels_like'] }}°F)
+                                {% else %}
+                                    <span style="font-size: 3.5rem; word-wrap: break-word; max-width: 100%;">{{ weather['conditions'] }}</span>
+                                {% endif %}
+                        </div>
+                        <div style="display: flex; flex-direction: column; justify-content: center;">
+                            <img
+                                src="{{ weather['icon_url'] }}"
+                                class="icon"
+                            />
+                        </div>
+                        <div style="display: flex; flex-direction: column; justify-content: center; min-width: 120px; width: 35%;">
+                            <span>High ↑ {{ weather['high_temp'] }}°F</span>
+                            <span>Low&nbsp; ↓ {{ weather['low_temp'] }}°F</span>
+                        </div>
+                    </div>
+                </div>
+                {% if weather['alerts'] %}
+                <div class="alerts">
+                    <strong>Alerts:</strong> {{ weather['alerts'] | join('; ') }}
+                </div>
+                {% endif %}
+                <p class="desc">{{ weather['description'] }}</p>
+
+                <div class="forecast" style="margin: 2rem 0;">
+                    <!-- <h3 style="margin-bottom: 1.5rem; font-size: 1.8rem; border-bottom: 2px solid #eee; padding-bottom: 0.5rem;">Forecast</h3> -->
+                    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem;">
+                        {% for day, forecast in weather['daily_forecasts_llm'].items() %}
+                        {% if loop.index <= 4 %}
+                        <div class="forecast-box">
+                            <div style="font-weight: bold; font-size: inherit; margin-bottom: 0.2rem;">
+                                {{ day }}
+                                {% set day_name = day %}
+                                {% set day_index = loop.index0 %}
+                                {% set icon = weather['daily_forecast_raw'][day_index]['icon'] if day_index < weather['daily_forecast_raw']|length else '' %}
+                                {% if icon %}
+                                <img src="https://openweathermap.org/img/wn/{{ icon }}@4x.png"
+                                     style="width: 100px; height: 100px; vertical-align: middle; filter: brightness(0.7);">
+                                {% endif %}
+                            </div>
+                            <div style="display: flex; gap: 1rem;">
+                                {% if day_index < weather['daily_forecast_raw']|length %}
+                                <span>↑ {{ weather['daily_forecast_raw'][day_index]['high'] }}°F</span> &nbsp;
+                                <span>↓ {{ weather['daily_forecast_raw'][day_index]['low'] }}°F</span>
+                                {% endif %}
+                            </div>
+                            <div class="forecast-box-desc">
+                                {{ forecast }}
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+
+
+
+            <!-- Dog picture section -->
+            <div id="dog-container" style="
+                margin: 5rem 0 0 0;
+                text-align: center;
+                overflow: hidden;
+            ">
+                <img id="dog-image" style="
+                    border-radius: 8px;
+                    max-width: 100%;
+                    max-height: 700px;
+                    min-height: 500px;
+                ">
+            </div>
+
+
+
+            <!-- Dog image script -->
+            <script>
+                fetch('https://dog.ceo/api/breeds/image/random')
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('dog-image').src = data.message;
+                    })
+                    .catch(error => {
+                        console.error('Error fetching dog image:', error);
+                        document.getElementById('dog-container').style.display = 'none';
+                    });
+            </script>
+
+        </div>
+    </body>
+</html>
