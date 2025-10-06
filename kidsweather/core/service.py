@@ -6,7 +6,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from ..infrastructure.cache import create_cache
+import diskcache
+
 from ..clients.llm import LLMClient
 from ..infrastructure.logging import LLMInteractionLogger
 from .settings import AppSettings, load_settings
@@ -46,7 +47,7 @@ class WeatherReportService:
             and weather_data
             and weather_data.get("lat")
             and weather_data.get("lon")
-            and self.settings.weather_api.api_key
+            and self.settings.weather_api_key
         ):
             yesterday = self.weather_client.fetch_yesterday_summary(
                 weather_data["lat"], weather_data["lon"]
@@ -71,7 +72,7 @@ class WeatherReportService:
                 weather_input=weather_data,
                 llm_context=llm_context,
                 system_prompt=prompt,
-                model_used=llm_response.get("_model_used", model_override or self.settings.primary_llm.model),
+                model_used=llm_response.get("_model_used", model_override or self.settings.llm_model),
                 llm_output={
                     "raw_llm_response": llm_response.get("_raw_llm_response", ""),
                     "parsed_result": payload,
@@ -93,7 +94,7 @@ class WeatherReportService:
 
     def _resolve_prompt(self, prompt_override: Optional[str]) -> str:
         if not prompt_override:
-            default_file = self.settings.paths.prompt_dir / "default.txt"
+            default_file = self.settings.prompt_dir / "default.txt"
             return default_file.read_text()
 
         path = Path(prompt_override)
@@ -138,13 +139,13 @@ def build_default_service() -> WeatherReportService:
     """Convenience constructor used by CLI and web app entrypoints."""
 
     settings = load_settings()
-    shared_cache = create_cache(settings.paths.cache_dir)
-    weather_client = WeatherClient(settings.weather_api, cache=shared_cache)
+    settings.cache_dir.mkdir(parents=True, exist_ok=True)
+    shared_cache = diskcache.Cache(settings.cache_dir)
+    weather_client = WeatherClient(settings, cache=shared_cache)
     llm_client = LLMClient(
-        settings.primary_llm,
-        settings.fallback_llm,
+        settings,
         cache=shared_cache,
-        cache_ttl_seconds=settings.weather_api.cache_ttl_seconds,
+        cache_ttl_seconds=settings.weather_cache_ttl_seconds,
     )
-    logger = LLMInteractionLogger(settings.paths.llm_log_db)
+    logger = LLMInteractionLogger(settings.llm_log_db)
     return WeatherReportService(settings, weather_client, llm_client, logger=logger)

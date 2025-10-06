@@ -17,8 +17,7 @@ The display is driven by a $40 single board computer and shows weather forecasts
 Transforms complex weather data into simple, engaging descriptions that kids can understand. Instead of "Partly cloudy with 70% chance of precipitation," you get "It might rain later - maybe bring an umbrella! 🌧️"
 
 The service includes:
-- Command-line weather reports
-- Flask web application with HTML interface
+- Command-line weather reports with HTML rendering
 - A shared service layer (`WeatherReportService`) used by every entrypoint
 - API caching for performance
 - LLM interaction logging and replay capabilities
@@ -88,24 +87,14 @@ See what the model was told:
 uv run python -m kidsweather --lat 38.9 --lon -77.0 --verbose
 ```
 
-### Flask Web App
+### Render HTML
 
-Run the web server (defaults to port 5001):
+Render weather report as HTML to a file:
 ```bash
-uv run python kidsweather/web/app.py
+uv run python -m kidsweather --render page.html
 ```
 
-Then open http://127.0.0.1:5001 in your browser.
-
-Available endpoints:
-- `/`: HTML weather report
-- `/weather.json`: JSON weather report
-- `/weather.txt`: Plain text weather description
-
-Render HTML directly to a file:
-```bash
-uv run python kidsweather/web/app.py --render page.html
-```
+This generates a standalone HTML file with weather information, styled for display on e-ink screens or other devices.
 
 ### LLM Replay Script
 
@@ -149,7 +138,7 @@ uv run python replay.py --log-id 5 --prompt "You are a pirate weather forecaster
 - **Weather client** (`weather_client.py`): fetches current conditions and optional historical summaries, applying diskcache when configured.
 - **LLM client** (`llm_client.py`): wraps the primary and optional fallback providers, normalising JSON responses and caching successful calls.
 - **Weather formatter** (`weather_formatter.py`): prepares both the LLM prompt context and the data needed for display.
-- **Weather report service** (`weather_service.py`): orchestrates data fetch, formatting, LLM generation, logging, and assembles the final payload used by Flask, the CLI, and replay tooling.
+- **Weather report service** (`weather_service.py`): orchestrates data fetch, formatting, LLM generation, logging, and assembles the final payload used by the CLI and replay tooling.
 - **Logging** (`llm_logging.py`): persists interactions to SQLite for replay.
 - **Utilities** (`utils.py`, `cache_provider.py`): helper routines for fixtures and cache construction.
 
@@ -162,4 +151,4 @@ uv run python replay.py --log-id 5 --prompt "You are a pirate weather forecaster
 - Caches API and LLM responses for 10 minutes using `diskcache`
 - Logs LLM interactions to `llm_log.sqlite3` for replay
 - Includes optional automatic fallback between LLM providers
-- Flask web application runs on port 5001
+- HTML rendering uses Jinja2 templates

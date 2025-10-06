@@ -7,24 +7,23 @@ from typing import Any, Dict, Optional
 
 import requests
 
-from ..infrastructure.cache import make_cache_key
-from ..core.settings import WeatherAPISettings
+from ..core.settings import AppSettings
 
 
 @dataclass(slots=True)
 class WeatherClient:
     """Thin wrapper around the weather API that hides caching and error handling."""
 
-    settings: WeatherAPISettings
+    settings: AppSettings
     cache: Optional[Any] = None  # diskcache.Cache, but kept loose for easier testing
 
     def fetch_current(self, lat: float, lon: float) -> Dict[str, Any]:
         """Fetch current weather plus hourly/daily forecasts."""
 
-        self.settings.require_api_key()
+        self.settings.require_weather_api_key()
         cache_key = None
         if self.cache:
-            cache_key = make_cache_key("weather", [lat, lon])
+            cache_key = f"weather_{lat}_{lon}"
             cached = self.cache.get(cache_key)
             if cached is not None:
                 return cached
@@ -32,28 +31,28 @@ class WeatherClient:
         params = {
             "lat": lat,
             "lon": lon,
-            "units": self.settings.units,
+            "units": self.settings.weather_units,
             "exclude": "minutely",
-            "appid": self.settings.api_key,
+            "appid": self.settings.weather_api_key,
         }
-        response = requests.get(self.settings.api_url, params=params, timeout=10)
+        response = requests.get(self.settings.weather_api_url, params=params, timeout=10)
         response.raise_for_status()
         data = response.json()
         if self.cache and cache_key:
-            self.cache.set(cache_key, data, expire=self.settings.cache_ttl_seconds)
+            self.cache.set(cache_key, data, expire=self.settings.weather_cache_ttl_seconds)
         return data
 
     def fetch_yesterday_summary(self, lat: float, lon: float) -> Optional[Dict[str, Any]]:
         """Fetch a coarse summary for yesterday using the time-machine API."""
 
-        self.settings.require_api_key()
+        self.settings.require_weather_api_key()
         now = datetime.utcnow()
         yesterday_noon = now.replace(hour=12, minute=0, second=0, microsecond=0) - timedelta(days=1)
         timestamp = int(yesterday_noon.timestamp())
 
         cache_key = None
         if self.cache:
-            cache_key = make_cache_key("weather_yesterday", [lat, lon, timestamp])
+            cache_key = f"weather_yesterday_{lat}_{lon}_{timestamp}"
             cached = self.cache.get(cache_key)
             if cached is not None:
                 return cached
@@ -62,10 +61,10 @@ class WeatherClient:
             "lat": lat,
             "lon": lon,
             "dt": timestamp,
-            "units": self.settings.units,
-            "appid": self.settings.api_key,
+            "units": self.settings.weather_units,
+            "appid": self.settings.weather_api_key,
         }
-        response = requests.get(self.settings.timemachine_url, params=params, timeout=10)
+        response = requests.get(self.settings.weather_timemachine_url, params=params, timeout=10)
         response.raise_for_status()
         payload = response.json()
         data = payload.get("data") or []
@@ -85,5 +84,5 @@ class WeatherClient:
         }
 
         if self.cache and cache_key:
-            self.cache.set(cache_key, summary, expire=self.settings.cache_ttl_seconds * 6)
+            self.cache.set(cache_key, summary, expire=self.settings.weather_cache_ttl_seconds * 6)
         return summary

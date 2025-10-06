@@ -11,13 +11,39 @@
 # ///
 
 import json
+from datetime import datetime
+from pathlib import Path
+from typing import Optional
 
 import click
 from dotenv import load_dotenv
 
 from .core.settings import load_settings
-from .utils.file_utils import load_weather_data, save_weather_data
 from .core.service import build_default_service
+from .formatting.html import render_to_file
+
+
+def save_weather_data(data: dict, filename: Optional[str] = None, *, directory: Optional[Path] = None) -> Path:
+    """Persist raw weather data to disk for later replay or testing."""
+    settings = load_settings()
+    target_dir = directory or settings.test_data_dir
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    if not filename:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"weather_{timestamp}.json"
+
+    path = target_dir / filename
+    path.write_text(json.dumps(data, indent=2))
+    return path
+
+
+def load_weather_data(filename: str, *, directory: Optional[Path] = None) -> dict:
+    """Load weather data previously saved for deterministic runs."""
+    settings = load_settings()
+    target_dir = directory or settings.test_data_dir
+    path = target_dir / filename
+    return json.loads(path.read_text())
 
 
 @click.command()
@@ -25,13 +51,12 @@ from .core.service import build_default_service
 @click.option('--lon', type=float, help='Longitude')
 @click.option('--save', type=str, help='Save weather data to test file (without .json suffix)')
 @click.option('--load', type=str, help='Load weather data from test file (without .json suffix)')
-@click.option('--save-json', type=str, help='Save output to JSON file (without .json suffix)')
-@click.option('--save-txt', type=str, help='Save description to text file (without .txt suffix)')
+@click.option('--render', type=str, help='Render HTML output to specified file')
 @click.option('--log-interactions', is_flag=True, default=False, help='Log LLM interaction details to the database.')
 @click.option('--prompt', type=str, help='Custom system prompt text or path to a prompt file.')
 @click.option('--model', type=str, help='Override the LLM model for this invocation.')
 @click.option('--verbose', is_flag=True, default=False, help='Show progress details and the LLM context dump.')
-def main(lat, lon, save, load, save_json, save_txt, log_interactions, prompt, model, verbose):
+def main(lat, lon, save, load, render, log_interactions, prompt, model, verbose):
     """Generate a kid-friendly weather report."""
 
     if verbose:
@@ -107,16 +132,9 @@ def main(lat, lon, save, load, save_json, save_txt, log_interactions, prompt, mo
     if report.get('alerts'):
         click.echo(f"\nAlerts: {', '.join(report['alerts'])}")
 
-    if save_json:
-        with open(f"{save_json}.json", 'w') as fh:
-            json.dump(report, fh, indent=2)
-        click.echo(f"\nSaved full output to: {save_json}.json")
-
-    if save_txt:
-        with open(f"{save_txt}.txt", 'w') as fh:
-            fh.write(report['description'])
-        click.echo(f"\nSaved description to: {save_txt}.txt")
-
+    if render:
+        render_to_file(report, render)
+        click.echo(f"\nRendered HTML to: {render}")
 
 
 if __name__ == '__main__':

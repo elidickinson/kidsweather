@@ -30,12 +30,12 @@ def main(log_id, prompt, new_model, show_context):
     """Replays a logged LLM interaction, optionally with a new prompt or model."""
 
     settings = load_settings()
-    if not settings.primary_llm.is_configured():
-        raise click.ClickException(
-            "Primary LLM configuration is incomplete. Ensure LLM_API_URL, LLM_API_KEY, and LLM_MODEL are set."
-        )
+    try:
+        settings.require_llm_configured()
+    except ValueError as e:
+        raise click.ClickException(str(e))
 
-    db_path = settings.paths.llm_log_db
+    db_path = settings.llm_log_db
     if not db_path.exists():
         raise click.ClickException(
             f"Log database file not found: {db_path}. Run the main application to generate logs."

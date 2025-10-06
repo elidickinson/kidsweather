@@ -1,9 +1,16 @@
 [project]
 name = "kidsweather"
 version = "0.1.0"
-description = "Add your description here"
+description = "Kid-friendly weather descriptions using OpenWeatherMap and LLM APIs"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.9"
 dependencies = [
+    "requests",
+    "python-dotenv",
+    "Jinja2",
+    "click",
+    "diskcache",
+    "feedparser",
+    "pytz",
     "pytest>=8.4.2",
 ]

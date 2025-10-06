@@ -1,12 +1,13 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to AI agents when working with code in this repository.
 
 ## Commands
-- Run Flask web app: `uv run python kidsweather/web/app.py`
+- Render weather HTML: `uv run python -m kidsweather --render page.html`
 - Run weather script: `uv run python -m kidsweather --lat 38.9 --lon -77.0`
 - Run LLM replay: `uv run python replay.py --log-id <id>`
 - Deploy to server: `./deploy.sh`
+- Full workflow: `./sendit.sh` (renders HTML, screenshots, pushes to e-ink)
 - Source the .venv when running python scripts
 
 ## Style Guidelines
@@ -22,8 +23,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Keep JSON output format consistent with example templates
 
 ## Architecture Notes
-- Flask for web interface (port 5001)
-- OpenWeatherMap and DeepSeek APIs
+- CLI tool with HTML rendering via Jinja2 templates
+- OpenWeatherMap API for weather data, any OpenAI-compatible API for LLM
 - Uses environment variables from .env file
 - Caches API responses in api_cache/ directory
-- Logs LLM interactions to llm_log.sqlite3
+- Logs LLM interactions to llm_log.sqlite3 for replay and debugging
+- Settings are in a single flat AppSettings dataclass (kidsweather/core/settings.py)
+- Yesterday's weather is included in LLM context for comparison

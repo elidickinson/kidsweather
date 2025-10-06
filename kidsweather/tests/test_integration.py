@@ -142,28 +142,37 @@ class TestWeatherClientIntegration:
     def test_weather_client_caching(self, mock_get):
         """Test that weather client properly handles caching."""
         from ..clients.weather import WeatherClient
-        from ..core.settings import WeatherAPISettings
-        from ..infrastructure.cache import create_cache
+        from ..core.settings import AppSettings
         from pathlib import Path
         import tempfile
+        import diskcache
 
         # Create temporary cache directory
         with tempfile.TemporaryDirectory() as temp_dir:
-            cache = create_cache(Path(temp_dir))
-            
+            cache = diskcache.Cache(Path(temp_dir))
+
             # Mock weather API response
             mock_response = Mock()
             mock_response.json.return_value = self._get_mock_weather_data()
             mock_response.raise_for_status.return_value = None
             mock_get.return_value = mock_response
 
-            # Create client with cache
-            settings = WeatherAPISettings(
-                api_url="https://api.openweathermap.org/data/3.0/onecall",
-                timemachine_url="https://api.openweathermap.org/data/3.0/onecall/timemachine",
-                units="imperial",
-                cache_ttl_seconds=600,
-                api_key="test_key"
+            # Create minimal settings for testing
+            settings = AppSettings(
+                root_dir=Path(temp_dir),
+                cache_dir=Path(temp_dir) / "cache",
+                prompt_dir=Path(temp_dir) / "prompts",
+                test_data_dir=Path(temp_dir) / "test_data",
+                llm_log_db=Path(temp_dir) / "llm_log.sqlite3",
+                weather_api_url="https://api.openweathermap.org/data/3.0/onecall",
+                weather_timemachine_url="https://api.openweathermap.org/data/3.0/onecall/timemachine",
+                weather_units="imperial",
+                weather_cache_ttl_seconds=600,
+                weather_api_key="test_key",
+                llm_api_url="http://test.com",
+                llm_api_key="test",
+                llm_model="test",
+                llm_supports_json_mode=True,
             )
             client = WeatherClient(settings, cache=cache)
 
