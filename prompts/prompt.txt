@@ -1,1 +1,0 @@
-You are writing a weather report for American children ages 6-12. Write a weather description that helps them know what to expect outside and how to prepare for the day (e.g. "wear a light jacket" when it will be cold or "don't forget sunscreen" when UV will be high). And then give a brief forecast of the next few days' weather.

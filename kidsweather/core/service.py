@@ -103,8 +103,8 @@ class WeatherReportService:
             else:
                 return prompt_override
 
-        # Check for instructions.txt in the prompt directory and combine if it exists
-        instructions_file = self.settings.prompt_dir / "instructions.txt"
+        # Check for base.txt in the instructions directory and combine if it exists
+        instructions_file = self.settings.instructions_dir / "base.txt"
         if instructions_file.exists():
             instructions_content = instructions_file.read_text()
             return f"{prompt_content}\n\n{instructions_content}"

@@ -23,6 +23,7 @@ class AppSettings:
     root_dir: Path
     cache_dir: Path
     prompt_dir: Path
+    instructions_dir: Path
     test_data_dir: Path
     llm_log_db: Path
 
@@ -54,6 +55,7 @@ class AppSettings:
         """Create non-existent directories that the app expects."""
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.prompt_dir.mkdir(parents=True, exist_ok=True)
+        self.instructions_dir.mkdir(parents=True, exist_ok=True)
         self.test_data_dir.mkdir(parents=True, exist_ok=True)
 
     def require_weather_api_key(self) -> None:
@@ -110,6 +112,7 @@ def load_settings(env_file: Optional[str] = None) -> AppSettings:
     root_dir = Path(__file__).parent.parent.parent
     cache_dir = root_dir / "api_cache"
     prompt_dir = root_dir / "prompts"
+    instructions_dir = root_dir / "instructions"
     test_data_dir = root_dir / "test_data"
     llm_log_db = root_dir / "llm_log.sqlite3"
 
@@ -118,6 +121,7 @@ def load_settings(env_file: Optional[str] = None) -> AppSettings:
         root_dir=root_dir,
         cache_dir=cache_dir,
         prompt_dir=prompt_dir,
+        instructions_dir=instructions_dir,
         test_data_dir=test_data_dir,
         llm_log_db=llm_log_db,
         # Weather API
