@@ -9,7 +9,7 @@
             html, body {
                 height: 2560px;
                 margin: 0;
-                padding: 0;
+                padding: 5px 0;
                 overflow: hidden;
             }
 
@@ -47,21 +47,30 @@
             }
 
             #cwg-content h1 {
-                font-size: 2.8rem;
-                text-align: center;
+                font-size: 3.4rem;
+                /*text-align: center;*/
                 margin-bottom: 1rem;
                 font-family: 'Times New Roman', serif;
                 font-weight: bold;
             }
 
             #cwg-content h2 {
-                font-size: 2.4rem;
+                font-size: 2.6rem;
                 border-bottom: 1px solid #000;
                 padding-bottom: 0.5rem;
             }
 
             #cwg-content h3 {
-                font-size: 2.0rem;
+                font-size: 2.35rem;
+                font-weight: bold;
+                margin: 10px 0;
+            }
+
+            #cwg-content p {
+                font-size: 1.8rem;
+            }
+
+            #cwg-content time {
                 font-weight: bold;
             }
 
@@ -253,7 +262,7 @@
                 const cwgContentDiv = document.getElementById('cwg-content');
 
                 try {
-                    const response = await fetch('https://cwg.eli.pw/api/cwg.html?use_existing_llm_output=true');
+                    const response = await fetch('https://cwg.eli.pw/api/cwg.html?use_existing_llm_output=false');
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }

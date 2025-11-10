@@ -22,6 +22,7 @@ rsync -avz --delete \
       --exclude='.gitignore' \
       --exclude='node_modules' \
       --exclude='.env' \
+      --exclude='__pycache__' \
       --exclude='*.sqlite3' \
       --filter=':- .gitignore' \
       -e "ssh -o RemoteCommand=none" \

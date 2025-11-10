@@ -6,10 +6,10 @@ if [ -f .env ]; then
     source .env
 fi
 
-uv run python -m kidsweather --render page.html
+uv run python -m kidsweather --render page.html --lat 38.89 --lon -77.009 --prompt prompts/bluey.txt
 
 # requires shot-scraper - install with `uv tool install shot-scraper` and `shot-scraper install`
-shot-scraper shot -w 1440 -h 2560 --wait 500 page.html -o page.png
+shot-scraper shot -w 1440 -h 2560 --wait 10000 page.html -o page.png
 
 
 
