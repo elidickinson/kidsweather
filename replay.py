@@ -17,8 +17,8 @@ from pathlib import Path
 import click
 from dotenv import load_dotenv
 
-from llm_client import LLMClient
-from settings import load_settings
+from kidsweather.clients.llm import LLMClient
+from kidsweather.core.settings import load_settings
 
 
 @click.command()

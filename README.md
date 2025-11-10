@@ -26,7 +26,7 @@ The service includes:
 ## Requirements
 
 - Python 3.9+
-- [uv](https://github.com/astral-sh/uv) for dependency management (optional, but recommended)
+- [uv](https://github.com/astral-sh/uv) for dependency management (recommended) or pip
 - OpenWeatherMap API key (free tier works fine)
 - LLM API key (DeepSeek, OpenAI, OpenRouter, or any OpenAI-compatible API)
 
@@ -47,7 +47,8 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
 4. Install dependencies:
 ```bash
-pip install -r requirements.txt
+uv sync
+# OR without uv: pip install .
 ```
 
 5. Copy the example environment file and configure your API keys:
@@ -134,21 +135,33 @@ uv run python replay.py --log-id 5 --prompt "You are a pirate weather forecaster
 
 ## Architecture Overview
 
-- **Settings** (`settings.py`): loads environment variables into a single dataclass tree and ensures required directories exist.
-- **Weather client** (`weather_client.py`): fetches current conditions and optional historical summaries, applying diskcache when configured.
-- **LLM client** (`llm_client.py`): wraps the primary and optional fallback providers, normalising JSON responses and caching successful calls.
-- **Weather formatter** (`weather_formatter.py`): prepares both the LLM prompt context and the data needed for display.
-- **Weather report service** (`weather_service.py`): orchestrates data fetch, formatting, LLM generation, logging, and assembles the final payload used by the CLI and replay tooling.
-- **Logging** (`llm_logging.py`): persists interactions to SQLite for replay.
-- **Utilities** (`utils.py`, `cache_provider.py`): helper routines for fixtures and cache construction.
+The project is organized as a Python package with a clear separation of concerns:
+
+- **Core** (`kidsweather/core/`): Contains the main service orchestration and settings management
+  - `settings.py`: Loads environment variables into a single dataclass tree and ensures required directories exist
+  - `service.py`: The `WeatherReportService` orchestrates data fetch, formatting, LLM generation, and logging
+- **Clients** (`kidsweather/clients/`): External API integration layers
+  - `weather_client.py`: Fetches current conditions and optional historical summaries from OpenWeatherMap, applying diskcache when configured
+  - `llm_client.py`: Wraps the primary and optional fallback LLM providers, normalising JSON responses and caching successful calls  
+- **Formatting** (`kidsweather/formatting/`): Data preparation and output generation
+  - `weather_formatter.py`: Prepares both the LLM prompt context and the data needed for display
+  - `html.py`: Contains `render_to_file()` function for HTML rendering using Jinja2 templates for e-ink displays
+- **Infrastructure** (`kidsweather/infrastructure/`): Cross-cutting concerns
+  - `cache_provider.py`: Cache construction and management utilities
+  - `llm_logging.py`: Persists LLM interactions to SQLite for replay and debugging
+- **Templates** (`kidsweather/templates/`): Jinja2 templates for HTML rendering
+- **Tests** (`kidsweather/tests/`): Unit and integration tests
+
+The main CLI entry point is `kidsweather/__main__.py`, which delegates to the Click-based command interface in `main.py`.
 
 ## Technical Notes
 
 - Uses OpenWeatherMap's One Call API 3.0
 - Supports any OpenAI-compatible chat completions API
-- Configuration lives in `settings.py` and is shared across every entrypoint
+- Configuration lives in `kidsweather/core/settings.py` and is shared across every entrypoint
 - Temperatures are in Fahrenheit
 - Caches API and LLM responses for 10 minutes using `diskcache`
 - Logs LLM interactions to `llm_log.sqlite3` for replay
-- Includes optional automatic fallback between LLM providers
-- HTML rendering uses Jinja2 templates
+- Includes optional automatic fallback between LLM providers  
+- HTML rendering uses Jinja2 templates from `kidsweather/templates/`
+- Organized package structure with clear separation of concerns

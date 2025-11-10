@@ -8,7 +8,7 @@ This file provides guidance to AI agents when working with code in this reposito
 - Run LLM replay: `uv run python replay.py --log-id <id>`
 - Deploy to server: `./deploy.sh`
 - Full workflow: `./sendit.sh` (renders HTML, screenshots, pushes to e-ink)
-- Source the .venv when running python scripts
+- Use `uv run` for all Python command execution (modern dependency management)
 
 ## Style Guidelines
 - Python 3.9+ with type hints when appropriate
@@ -21,12 +21,15 @@ This file provides guidance to AI agents when working with code in this reposito
 - Cache API responses with diskcache when possible
 - Log errors with context to aid debugging
 - Keep JSON output format consistent with example templates
+- Custom prompts available in `prompts/` directory (e.g., bluey.txt, ant.txt)
 
 ## Architecture Notes
 - CLI tool with HTML rendering via Jinja2 templates
 - OpenWeatherMap API for weather data, any OpenAI-compatible API for LLM
 - Uses environment variables from .env file
+- Modern Python packaging with `pyproject.toml` and `uv` dependency management
 - Caches API responses in api_cache/ directory
 - Logs LLM interactions to llm_log.sqlite3 for replay and debugging
 - Settings are in a single flat AppSettings dataclass (kidsweather/core/settings.py)
 - Yesterday's weather is included in LLM context for comparison
+- Organized package structure: core/, clients/, formatting/, infrastructure/, templates/
