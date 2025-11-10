@@ -37,10 +37,11 @@
             #cwg-content {
                 flex: 1;
                 margin-top: 3rem;
-                font-size: 2.2rem;
+                margin-bottom: 1rem;
+                font-size: 2.6rem;
                 font-family: Georgia, 'Times New Roman', serif;
                 line-height: 1.2;
-                column-count: 3;
+                column-count: 2;
                 column-gap: 2rem;
                 column-fill: auto;
                 overflow: hidden;
@@ -50,12 +51,13 @@
                 font-size: 3.4rem;
                 /*text-align: center;*/
                 margin-bottom: 1rem;
+                margin-top: 0;
                 font-family: 'Times New Roman', serif;
                 font-weight: bold;
             }
 
             #cwg-content h2 {
-                font-size: 2.6rem;
+                font-size: 2.8rem;
                 border-bottom: 1px solid #000;
                 padding-bottom: 0.5rem;
             }
@@ -66,8 +68,8 @@
                 margin: 10px 0;
             }
 
-            #cwg-content p {
-                font-size: 1.8rem;
+            #cwg-content p, #cwg-content time {
+                font-size: 2.2rem;
             }
 
             #cwg-content time {
@@ -155,6 +157,7 @@
                 font-weight: bold;
                 font-size: 3.1rem;
                 margin-bottom: 0.2rem;
+                white-space: nowrap;
             }
 
 
@@ -165,7 +168,11 @@
 
             .forecast-box-desc {
                 font-weight: bold;
-                font-size: 3.2rem;
+                font-size: 3.1rem;
+                white-space: nowrap;
+                overflow: hidden;
+                /*text-overflow: ellipsis;*/
+                display: block;
             }
 
             #dogs {
@@ -179,7 +186,7 @@
             }
 
             #dogs img {
-                height: 270px;
+                height: 300px;
                 width: auto;
                 object-fit: cover;
                 flex-shrink: 0;
@@ -234,7 +241,7 @@
                                 {% set icon = weather['daily_forecast_raw'][day_index]['icon'] if day_index < weather['daily_forecast_raw']|length else '' %}
                                 {% if icon %}
                                 <img src="https://openweathermap.org/img/wn/{{ icon }}@4x.png"
-                                     style="width: 125px; height: 125px; vertical-align: middle; filter: brightness(0.7);">
+                                     style="width: 125px; height: 125px; vertical-align: middle; filter: brightness(0.7); margin-left: -20px">
                                 {% endif %}
 
                                 {{ forecast }}
