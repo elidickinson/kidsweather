@@ -111,7 +111,7 @@
             }
 
             .date {
-                font-size: 4.0rem;
+                font-size: 3.0rem;
                 text-align: center;
                 color: #333;
             }
@@ -144,9 +144,10 @@
 
             .forecast-day {
                 font-weight: bold;
-                font-size: inherit;
+                font-size: 3.1rem;
                 margin-bottom: 0.2rem;
             }
+
 
             .forecast-temps {
                 display: flex;
@@ -155,7 +156,24 @@
 
             .forecast-box-desc {
                 font-weight: bold;
-                font-size: 3.5rem;
+                font-size: 3.2rem;
+            }
+
+            #dogs {
+                display: flex;
+                flex-wrap: nowrap;
+                gap: 15px;
+                margin: 20px 0;
+                overflow-x: auto;
+                justify-content: flex-start;
+                align-items: center;
+            }
+
+            #dogs img {
+                height: 270px;
+                width: auto;
+                object-fit: cover;
+                flex-shrink: 0;
             }
         </style>
     </head>
@@ -200,20 +218,18 @@
                                 {{ day }}
                                 {% set day_name = day %}
                                 {% set day_index = loop.index0 %}
+                                <span>↑{{ weather['daily_forecast_raw'][day_index]['high'] }}°F</span>
+                                <span>↓{{ weather['daily_forecast_raw'][day_index]['low'] }}°F</span>
+                            </div>
+                            <div class="forecast-box-desc">
                                 {% set icon = weather['daily_forecast_raw'][day_index]['icon'] if day_index < weather['daily_forecast_raw']|length else '' %}
                                 {% if icon %}
                                 <img src="https://openweathermap.org/img/wn/{{ icon }}@4x.png"
-                                     style="width: 100px; height: 100px; vertical-align: middle; filter: brightness(0.7);">
+                                     style="width: 125px; height: 125px; vertical-align: middle; filter: brightness(0.7);">
                                 {% endif %}
-                            </div>
-                            <div class="forecast-temps">
-                                {% if day_index < weather['daily_forecast_raw']|length %}
-                                <span>↑ {{ weather['daily_forecast_raw'][day_index]['high'] }}°F</span>
-                                <span>↓ {{ weather['daily_forecast_raw'][day_index]['low'] }}°F</span>
-                                {% endif %}
-                            </div>
-                            <div class="forecast-box-desc">
+
                                 {{ forecast }}
+
                             </div>
                         </div>
                         {% endif %}
@@ -222,6 +238,9 @@
                 </div>
             </div>
 
+            <div id="dogs">
+                <p>Loading dog images...</p>
+            </div>
             <!-- CWG content section -->
             <div id="cwg-content">
                 <p>Loading content...</p>
@@ -246,8 +265,46 @@
                 }
             }
 
+            // Function to load dog images
+            async function loadDogImages() {
+                const dogsDiv = document.getElementById('dogs');
+                dogsDiv.innerHTML = ''; // Clear loading message
+
+                // Get the page width to estimate how many dogs we can fit
+                const pageWidth = window.innerWidth;
+                const estimatedDogWidth = 250; // rough estimate of dog image width
+                const numDogs = Math.floor(pageWidth / estimatedDogWidth);
+
+                try {
+                    const dogPromises = [];
+                    // Load dog images to fill the row
+                    for (let i = 0; i < numDogs; i++) {
+                        dogPromises.push(fetch('https://dog.ceo/api/breeds/image/random'));
+                    }
+
+                    const responses = await Promise.all(dogPromises);
+                    const imageData = await Promise.all(responses.map(response => response.json()));
+
+                    imageData.forEach(data => {
+                        if (data.status === 'success') {
+                            const img = document.createElement('img');
+                            img.src = data.message;
+                            img.alt = 'Cute dog picture';
+                            img.loading = 'lazy';
+                            dogsDiv.appendChild(img);
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error loading dog images:', error);
+                    dogsDiv.innerHTML = '<p>Failed to load dog images.</p>';
+                }
+            }
+
             // Load the content when the page loads
-            document.addEventListener('DOMContentLoaded', loadCwgContent);
+            document.addEventListener('DOMContentLoaded', () => {
+                loadCwgContent();
+                loadDogImages();
+            });
         </script>
     </body>
 </html>
