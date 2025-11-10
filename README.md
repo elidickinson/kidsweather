@@ -106,6 +106,24 @@ uv run python replay.py --log-id 5 --new-model deepseek-coder
 uv run python replay.py --log-id 5 --prompt "You are a pirate weather forecaster."
 ```
 
+### Customizing Prompts
+
+The weather report tone and style can be customized using prompt files in `prompts/`. The system automatically combines character-specific prompts with shared instructions:
+
+**Prompt Structure:**
+- `instructions.txt` - Shared formatting rules, JSON structure, and technical guidelines (rarely needs changing)
+- Individual prompt files (e.g., `bluey.txt`, `default.txt`) - Character voice and tone (easy to customize)
+
+When you use a prompt file, the system automatically appends `instructions.txt` to it, so you only need to specify the character voice.
+
+**Using a custom prompt:**
+```bash
+uv run python -m kidsweather --prompt prompts/bluey.txt
+```
+
+**Creating a new character:**
+Create a new file in `prompts/` with just the character voice and tone. The technical instructions will be added automatically.
+
 ## Example Output
 
 ```json

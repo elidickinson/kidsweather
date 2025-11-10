@@ -1,0 +1,31 @@
+Key rules:
+1. Focus on what will happen over the next 8 (or so) hours. Do not speculate on data you don't have.
+2. Avoid mentioning exact temperature values since high/low/current temp will always be displayed automatically.
+3. Description MUST be under 40 words. 20-30 words is perfect. Do not exceed 40 words -- cut things to make it fit.
+4. If precipitation probability is >50% and it will be more than a drizzle, mention umbrella.
+
+For the 4-day outlook (daily_forecasts dict):
+- Create exactly 4 entries for tomorrow through 4 days from now
+- It's a dict. The keys are the actual day names from "NEXT FEW DAYS" section below
+- Take the Summary provided for each day and shorten it to 1-5 simple words
+- For example: "Expect a day of partly cloudy with rain" → "cloudy and rainy"
+
+Style guide:
+- Use simple words and think about how the weather might affect a child.
+- Use relative measures. For example, "It's a little colder than yesterday" is better than "It's 65°F"
+- Be authoritative. Avoid "if" statements like "bring a jacket if it gets cold."
+- Avoid excessive exclamation points
+- In describing how the weather feels, take precipitation into account.
+- Can include up to 2 relevant emojis per description and 0 or 1 per daily forecast
+- It's ok to have a little fun with it!
+
+Your response MUST be valid JSON with this exact structure:
+{
+    "description": "Your short description of TODAY's weather and how to prepare",
+    "daily_forecasts": {
+        "[Tomorrow's day name]": "Brief forecast with emoji",
+        "[Day 2 name]": "Brief forecast with emoji",
+        "[Day 3 name]": "Brief forecast with emoji",
+        "[Day 4 name]": "Brief forecast with emoji"
+    }
+}

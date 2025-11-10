@@ -95,12 +95,21 @@ class WeatherReportService:
     def _resolve_prompt(self, prompt_override: Optional[str]) -> str:
         if not prompt_override:
             default_file = self.settings.prompt_dir / "default.txt"
-            return default_file.read_text()
+            prompt_content = default_file.read_text()
+        else:
+            path = Path(prompt_override)
+            if path.exists() and path.is_file():
+                prompt_content = path.read_text()
+            else:
+                return prompt_override
 
-        path = Path(prompt_override)
-        if path.exists() and path.is_file():
-            return path.read_text()
-        return prompt_override
+        # Check for instructions.txt in the prompt directory and combine if it exists
+        instructions_file = self.settings.prompt_dir / "instructions.txt"
+        if instructions_file.exists():
+            instructions_content = instructions_file.read_text()
+            return f"{prompt_content}\n\n{instructions_content}"
+
+        return prompt_content
 
     @staticmethod
     def _assemble_report(
