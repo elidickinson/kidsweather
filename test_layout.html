@@ -67,6 +67,8 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            /* Debug: show box boundaries */
+            /* outline: 2px solid rgba(255,0,0,0.3); */
         }
 
         /* Content wrapper for shrink-to-fit */
@@ -234,6 +236,11 @@
             object-fit: contain;
             border-radius: 16px;
         }
+
+        /* Debug mode toggle */
+        .screen.debug .box {
+            outline: 2px solid rgba(255,0,0,0.3);
+        }
     </style>
 </head>
 <body>
@@ -241,7 +248,7 @@
         <!-- Date -->
         <div class="box date-box">
             <div class="box-content" data-shrink>
-                {{ weather['last_updated'] }}
+                Tuesday, December 31 at 10:30 AM
             </div>
         </div>
 
@@ -249,64 +256,68 @@
         <div class="box current-box">
             <div class="box-content" data-shrink>
                 <div class="current-left">
-                    <div class="temp-main">{{ weather['temperature'] }}°</div>
-                    {% if 'feels_like' in weather and (weather['temperature'] - weather['feels_like'])|abs >= 10 %}
-                        <div class="temp-feels">Feels {{ weather['feels_like'] }}°</div>
-                    {% else %}
-                        <div class="conditions">{{ weather['conditions'] }}</div>
-                    {% endif %}
+                    <div class="temp-main">47°</div>
+                    <div class="conditions">overcast clouds</div>
                 </div>
                 <div class="current-center">
-                    <img src="{{ weather['icon_url'] }}" class="weather-icon" alt="weather">
+                    <img src="https://openweathermap.org/img/wn/04d@4x.png" class="weather-icon" alt="weather">
                 </div>
                 <div class="current-right">
-                    <div class="temp-range temp-high">↑ {{ weather['high_temp'] }}°</div>
-                    <div class="temp-range temp-low">↓ {{ weather['low_temp'] }}°</div>
+                    <div class="temp-range temp-high">↑ 52°</div>
+                    <div class="temp-range temp-low">↓ 38°</div>
                 </div>
             </div>
         </div>
 
-        <!-- Alerts -->
-        <div class="box alerts-box {% if not weather['alerts'] %}empty{% endif %}">
+        <!-- Alerts (with content) -->
+        <div class="box alerts-box">
             <div class="box-content" data-shrink>
-                {% if weather['alerts'] %}
-                    <strong>⚠️ Alert:</strong> {{ weather['alerts'] | join('; ') }}
-                {% else %}
-                    &nbsp;
-                {% endif %}
+                <strong>⚠️ Alert:</strong> Wind Advisory in effect until 6 PM - gusts up to 45 mph expected
             </div>
         </div>
 
         <!-- Main Description -->
         <div class="box description-box">
             <div class="box-content" data-shrink>
-                {{ weather['description'] }}
+                It's cloudy and a bit chilly today! Wear a warm jacket if you go outside. 🧥
             </div>
         </div>
 
         <!-- Forecast Grid -->
         <div class="box forecast-box">
             <div class="box-content">
-                {% for day, forecast in weather['daily_forecasts_llm'].items() %}
-                {% if loop.index <= 4 %}
                 <div class="forecast-day">
                     <div class="forecast-header">
-                        <span class="forecast-day-name">{{ day }}</span>
-                        {% set day_index = loop.index0 %}
-                        {% set icon = weather['daily_forecast_raw'][day_index]['icon'] if day_index < weather['daily_forecast_raw']|length else '' %}
-                        {% if icon %}
-                        <img src="https://openweathermap.org/img/wn/{{ icon }}@4x.png" class="forecast-icon" alt="">
-                        {% endif %}
+                        <span class="forecast-day-name">Wednesday</span>
+                        <img src="https://openweathermap.org/img/wn/10d@4x.png" class="forecast-icon" alt="">
                     </div>
-                    {% if day_index < weather['daily_forecast_raw']|length %}
-                    <div class="forecast-temps">
-                        ↑{{ weather['daily_forecast_raw'][day_index]['high'] }}° ↓{{ weather['daily_forecast_raw'][day_index]['low'] }}°
-                    </div>
-                    {% endif %}
-                    <div class="forecast-desc" data-shrink>{{ forecast }}</div>
+                    <div class="forecast-temps">↑52° ↓41°</div>
+                    <div class="forecast-desc" data-shrink>Rainy day - bring your umbrella! 🌧️</div>
                 </div>
-                {% endif %}
-                {% endfor %}
+                <div class="forecast-day">
+                    <div class="forecast-header">
+                        <span class="forecast-day-name">Thursday</span>
+                        <img src="https://openweathermap.org/img/wn/03d@4x.png" class="forecast-icon" alt="">
+                    </div>
+                    <div class="forecast-temps">↑55° ↓43°</div>
+                    <div class="forecast-desc" data-shrink>Clouds clearing up ☁️</div>
+                </div>
+                <div class="forecast-day">
+                    <div class="forecast-header">
+                        <span class="forecast-day-name">Friday</span>
+                        <img src="https://openweathermap.org/img/wn/01d@4x.png" class="forecast-icon" alt="">
+                    </div>
+                    <div class="forecast-temps">↑58° ↓44°</div>
+                    <div class="forecast-desc" data-shrink>Sunny and nice! ☀️</div>
+                </div>
+                <div class="forecast-day">
+                    <div class="forecast-header">
+                        <span class="forecast-day-name">Saturday</span>
+                        <img src="https://openweathermap.org/img/wn/02d@4x.png" class="forecast-icon" alt="">
+                    </div>
+                    <div class="forecast-temps">↑60° ↓45°</div>
+                    <div class="forecast-desc" data-shrink>Partly cloudy, good for playing outside!</div>
+                </div>
             </div>
         </div>
 
@@ -322,7 +333,7 @@
         // Shrink-to-fit: scale down content that overflows its container
         function shrinkToFit() {
             document.querySelectorAll('[data-shrink]').forEach(el => {
-                const parent = el.closest('.box');
+                const parent = el.closest('.box') || el.closest('.forecast-day');
                 if (!parent) return;
 
                 // Reset any previous transform
@@ -333,8 +344,8 @@
                 const elRect = el.getBoundingClientRect();
 
                 // Calculate scale needed to fit (with some padding)
-                const availableWidth = parentRect.width - 20;
-                const availableHeight = parentRect.height - 20;
+                const availableWidth = parentRect.width - 40;
+                const availableHeight = parentRect.height - 40;
 
                 const scaleX = elRect.width > availableWidth ? availableWidth / elRect.width : 1;
                 const scaleY = elRect.height > availableHeight ? availableHeight / elRect.height : 1;
@@ -343,6 +354,7 @@
 
                 if (scale < 1) {
                     el.style.transform = `scale(${scale})`;
+                    console.log(`Shrunk ${el.textContent.substring(0, 30)}... to ${(scale * 100).toFixed(0)}%`);
                 }
             });
         }
@@ -362,6 +374,13 @@
         // Run shrink-to-fit after fonts and content load
         document.fonts.ready.then(shrinkToFit);
         window.addEventListener('load', shrinkToFit);
+
+        // Toggle debug mode with 'd' key
+        document.addEventListener('keypress', e => {
+            if (e.key === 'd') {
+                document.querySelector('.screen').classList.toggle('debug');
+            }
+        });
     </script>
 </body>
 </html>
