@@ -240,14 +240,14 @@
     <div class="screen">
         <!-- Date -->
         <div class="box date-box">
-            <div class="box-content" data-shrink>
+            <div class="box-content">
                 {{ weather['last_updated'] }}
             </div>
         </div>
 
         <!-- Current Weather -->
         <div class="box current-box">
-            <div class="box-content" data-shrink>
+            <div class="box-content">
                 <div class="current-left">
                     <div class="temp-main">{{ weather['temperature'] }}°</div>
                     {% if 'feels_like' in weather and (weather['temperature'] - weather['feels_like'])|abs >= 10 %}
@@ -268,7 +268,7 @@
 
         <!-- Alerts -->
         <div class="box alerts-box {% if not weather['alerts'] %}empty{% endif %}">
-            <div class="box-content" data-shrink>
+            <div class="box-content">
                 {% if weather['alerts'] %}
                     <strong>⚠️ Alert:</strong> {{ weather['alerts'] | join('; ') }}
                 {% else %}
@@ -279,7 +279,7 @@
 
         <!-- Main Description -->
         <div class="box description-box">
-            <div class="box-content" data-shrink>
+            <div class="box-content">
                 {{ weather['description'] }}
             </div>
         </div>
@@ -303,7 +303,7 @@
                         ↑{{ weather['daily_forecast_raw'][day_index]['high'] }}° ↓{{ weather['daily_forecast_raw'][day_index]['low'] }}°
                     </div>
                     {% endif %}
-                    <div class="forecast-desc" data-shrink>{{ forecast }}</div>
+                    <div class="forecast-desc">{{ forecast }}</div>
                 </div>
                 {% endif %}
                 {% endfor %}
@@ -320,9 +320,13 @@
 
     <script>
         // Shrink-to-fit: scale down content that overflows its container
+        // All .box-content and .forecast-desc elements shrink by default
+        // Add data-no-shrink attribute to disable for specific elements
         function shrinkToFit() {
-            document.querySelectorAll('[data-shrink]').forEach(el => {
-                const parent = el.closest('.box');
+            const selectors = '.box-content:not([data-no-shrink]), .forecast-desc:not([data-no-shrink])';
+            document.querySelectorAll(selectors).forEach(el => {
+                // Find the containing box
+                const parent = el.closest('.box') || el.closest('.forecast-day');
                 if (!parent) return;
 
                 // Reset any previous transform
@@ -333,8 +337,9 @@
                 const elRect = el.getBoundingClientRect();
 
                 // Calculate scale needed to fit (with some padding)
-                const availableWidth = parentRect.width - 20;
-                const availableHeight = parentRect.height - 20;
+                const padding = 20;
+                const availableWidth = parentRect.width - padding;
+                const availableHeight = parentRect.height - padding;
 
                 const scaleX = elRect.width > availableWidth ? availableWidth / elRect.width : 1;
                 const scaleY = elRect.height > availableHeight ? availableHeight / elRect.height : 1;
