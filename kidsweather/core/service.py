@@ -37,10 +37,13 @@ class WeatherReportService:
         source: str = "unknown",
         weather_data_override: Optional[Dict[str, Any]] = None,
         model_override: Optional[str] = None,
+        no_refresh_weather: bool = False,
+        no_refresh_llm: bool = False,
+        force_refresh_llm: bool = False,
     ) -> Dict[str, Any]:
         """Return a fully populated report ready for display layers."""
 
-        weather_data = weather_data_override or self._fetch_weather_data(latitude, longitude)
+        weather_data = weather_data_override or self._fetch_weather_data(latitude, longitude, no_refresh_weather)
         yesterday = None
         if (
             include_yesterday
@@ -49,16 +52,19 @@ class WeatherReportService:
             and weather_data.get("lon")
             and self.settings.weather_api_key
         ):
-            yesterday = self.weather_client.fetch_yesterday_summary(
-                weather_data["lat"], weather_data["lon"]
-            )
+            yesterday = self._fetch_yesterday_data_cached(weather_data["lat"], weather_data["lon"], no_refresh_weather)
 
         prompt = self._resolve_prompt(prompt_override)
         llm_context = format_for_llm(weather_data, yesterday)
+        
+        # --force-refresh-llm overrides --no-refresh-llm
+        effective_no_refresh = no_refresh_llm and not force_refresh_llm
         llm_response = self.llm_client.generate(
             llm_context,
             prompt,
             model_override=model_override,
+            no_refresh=effective_no_refresh,
+            force_refresh=force_refresh_llm,
         )
 
         if log_interaction and self.logger:
@@ -87,10 +93,38 @@ class WeatherReportService:
         self.last_system_prompt = prompt
         return self._assemble_report(weather_data, llm_response, display_data)
 
-    def _fetch_weather_data(self, latitude: Optional[float], longitude: Optional[float]) -> Dict[str, Any]:
+    def _fetch_weather_data(self, latitude: Optional[float], longitude: Optional[float], no_refresh: bool = False) -> Dict[str, Any]:
         lat_value = latitude if latitude is not None else self.settings.default_lat
         lon_value = longitude if longitude is not None else self.settings.default_lon
-        return self.weather_client.fetch_current(lat_value, lon_value)
+        
+        return self.weather_client.fetch_current(lat_value, lon_value, no_refresh=no_refresh)
+    
+    def _fetch_yesterday_data_cached(self, lat: float, lon: float, no_refresh: bool = False) -> Optional[Dict[str, Any]]:
+        try:
+            return self.weather_client.fetch_yesterday_summary(lat, lon, no_refresh=no_refresh)
+        except ValueError as e:
+            # If we couldn't find exact timestamp match, try any yesterday data for these coordinates
+            if no_refresh and "yesterday" in str(e):
+                import re
+                pattern = re.compile(rf"weather_yesterday_{lat}_{lon}_\d+")
+                for key in self.weather_client.cache.iterkeys():
+                    if pattern.match(key):
+                        cached_data = self.weather_client.cache.get(key)
+                        if cached_data is not None:
+                            return cached_data
+            raise
+    
+    # This method is no longer needed since WeatherClient handles no_refresh logic
+    # def _get_cached_weather(self, cache_key: str, location_desc: str) -> Optional[Dict[str, Any]]:
+    #     """Helper method to get cached weather data with consistent error handling."""
+    #     if not self.weather_client.cache:
+    #         raise ValueError("Cache not available and --no-refresh-weather was specified")
+    #     
+    #     cached = self.weather_client.cache.get(cache_key)
+    #     if cached is not None:
+    #         return cached
+    #         
+    #     raise ValueError(f"No cached weather data found for {location_desc} and --no-refresh-weather was specified")
 
     def _resolve_prompt(self, prompt_override: Optional[str]) -> str:
         if not prompt_override:
