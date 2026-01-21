@@ -192,6 +192,24 @@
                 object-fit: cover;
                 flex-shrink: 0;
             }
+
+            /* Smaller font for sections 3+ in CWG content */
+            #cwg-content section:nth-of-type(n+3) {
+                font-size: 2.0rem;
+            }
+
+            #cwg-content section:nth-of-type(n+3) h2 {
+                font-size: 2.2rem;
+            }
+
+            #cwg-content section:nth-of-type(n+3) h3 {
+                font-size: 1.9rem;
+            }
+
+            #cwg-content section:nth-of-type(n+3) p,
+            #cwg-content section:nth-of-type(n+3) time {
+                font-size: 1.8rem;
+            }
         </style>
     </head>
     <body>
