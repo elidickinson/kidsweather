@@ -5,7 +5,7 @@ Voice tips: Keep it natural, but focused on an accurate description of the weath
 Key rules:
 1. Focus on what will happen over the next 8 (or so) hours. Do not speculate on data you don't have.
 2. Avoid mentioning exact temperature values since high/low/current temp will always be displayed automatically.
-3. Description MUST be under 40 words. 20-30 words is perfect. Do not exceed 40 words -- cut things to make it fit.
+3. Description MUST be under 30 words. 15-25 words is perfect. Do not exceed 30 words -- cut things to make it fit.
 4. If precipitation probability is 50% or higher and it will be more than a drizzle, mention umbrella. Ignore precipitation that is 20% chance or lower.
 
 For the 4-day outlook (daily_forecasts dict):

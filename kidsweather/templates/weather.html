@@ -225,7 +225,7 @@
                 {% endif %}
                 <p class="desc">{{ weather['description'] }}</p>
 
-                <div class="forecast">
+                <div class="forecast" style="display:none">
                     <div class="forecast-grid">
                         {% for day, forecast in weather['daily_forecasts_llm'].items() %}
                         {% if loop.index <= 2 %}
