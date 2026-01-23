@@ -39,7 +39,7 @@
                 flex: 1;
                 margin-top: 3rem;
                 margin-bottom: 1rem;
-                font-size: 2.6rem;
+                font-size: 2.3rem;
                 font-family: Georgia, 'Times New Roman', serif;
                 line-height: 1.2;
                 column-count: 2;
@@ -49,7 +49,7 @@
             }
 
             #cwg-content h1 {
-                font-size: 3.4rem;
+                font-size: 3.0rem;
                 /*text-align: center;*/
                 margin-bottom: 1rem;
                 margin-top: 0;
@@ -58,19 +58,19 @@
             }
 
             #cwg-content h2 {
-                font-size: 2.8rem;
+                font-size: 2.5rem;
                 border-bottom: 1px solid #000;
                 padding-bottom: 0.5rem;
             }
 
             #cwg-content h3 {
-                font-size: 2.35rem;
+                font-size: 2.1rem;
                 font-weight: bold;
                 margin: 10px 0;
             }
 
             #cwg-content p, #cwg-content time {
-                font-size: 2.2rem;
+                font-size: 2.0rem;
             }
 
             #cwg-content time {
@@ -135,6 +135,7 @@
                 border: 1px solid #ffecb5;
                 border-radius: 4px;
                 color: #664d03;
+                font-size: 1.2rem;
             }
 
             .forecast {
@@ -193,22 +194,49 @@
                 flex-shrink: 0;
             }
 
-            /* Smaller font for sections 3+ in CWG content */
-            #cwg-content section:nth-of-type(n+3) {
+            /* Smaller font for 2nd section in CWG content */
+            #cwg-content section:nth-of-type(2) {
+                font-size: 1.8rem;
+            }
+
+            #cwg-content section:nth-of-type(2) h2 {
                 font-size: 2.0rem;
             }
 
+            #cwg-content section:nth-of-type(2) h3 {
+                font-size: 1.7rem;
+            }
+
+            #cwg-content section:nth-of-type(2) p,
+            #cwg-content section:nth-of-type(2) time {
+                font-size: 1.6rem;
+            }
+
+            /* Even smaller font for 3rd and later sections in CWG content */
+            #cwg-content section:nth-of-type(n+3) {
+                font-size: 1.3rem;
+            }
+
             #cwg-content section:nth-of-type(n+3) h2 {
-                font-size: 2.2rem;
+                font-size: 1.5rem;
             }
 
             #cwg-content section:nth-of-type(n+3) h3 {
-                font-size: 1.9rem;
+                font-size: 1.2rem;
             }
 
             #cwg-content section:nth-of-type(n+3) p,
             #cwg-content section:nth-of-type(n+3) time {
-                font-size: 1.8rem;
+                font-size: 1.1rem;
+            }
+
+            /* Direct child p tags - progressive sizing */
+            #cwg-content > p:nth-of-type(3) {
+                font-size: 1.6rem;
+            }
+
+            #cwg-content > p:nth-of-type(n+4) {
+                font-size: 1.1rem;
             }
         </style>
     </head>
