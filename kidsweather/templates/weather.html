@@ -55,6 +55,7 @@
                 margin-top: 0;
                 font-family: 'Times New Roman', serif;
                 font-weight: bold;
+                /*column-span: all;*/
             }
 
             #cwg-content h2 {
@@ -73,8 +74,17 @@
                 font-size: 2.0rem;
             }
 
+            /*#cwg-content section:first-of-type p:first-of-type {
+                margin-top: 0;
+            }*/
+
             #cwg-content time {
                 font-weight: bold;
+            }
+
+            #cwg-content h1 time {
+                font-weight: inherit;
+                font-size: inherit;
             }
 
             .weather-header {
@@ -84,6 +94,7 @@
             .desc {
                 font-size: 4.8rem;
                 font-weight: bolder;
+                margin: 25px 0 15px;
             }
 
             .icon-header {
@@ -129,13 +140,14 @@
             }
 
             .alerts {
-                margin-top: 1rem;
-                padding: 0.75rem;
+                padding: 1rem;
                 background-color: #fff3cd;
                 border: 1px solid #ffecb5;
                 border-radius: 4px;
                 color: #664d03;
-                font-size: 1.5rem;
+                font-size: 2.5rem;
+                font-weight: bold;
+                text-align: center;
             }
 
             .forecast {
@@ -181,7 +193,7 @@
                 display: flex;
                 flex-wrap: nowrap;
                 gap: 15px;
-                margin: 20px 0;
+                margin: 5px 0;
                 overflow-x: auto;
                 justify-content: flex-start;
                 align-items: center;
@@ -194,42 +206,22 @@
                 flex-shrink: 0;
             }
 
-            /* Smaller font for 2nd section in CWG content */
-            #cwg-content section:nth-of-type(2) {
-                font-size: 1.8rem;
+            /* Smaller font for 2nd and later section in CWG content */
+            #cwg-content section:nth-of-type(n+2) p,
+            #cwg-content section:nth-of-type(n+2) time,
+            #cwg-content > p:nth-of-type(n+2) {
+                font-size: 1.45rem;
             }
 
-            #cwg-content section:nth-of-type(2) h2 {
+            #cwg-content section:nth-of-type(n+2) h2 {
                 font-size: 2.0rem;
             }
 
-            #cwg-content section:nth-of-type(2) h3 {
+            #cwg-content section:nth-of-type(n+2) h3 {
                 font-size: 1.7rem;
             }
 
-            #cwg-content section:nth-of-type(2) p,
-            #cwg-content section:nth-of-type(2) time {
-                font-size: 1.6rem;
-            }
 
-            /* Even smaller font for 3rd and later sections in CWG content */
-            #cwg-content section:nth-of-type(n+3) {
-                font-size: 1.3rem;
-            }
-
-            #cwg-content section:nth-of-type(n+3) p,
-            #cwg-content section:nth-of-type(n+3) time {
-                font-size: 1.1rem;
-            }
-
-            /* Direct child p tags - progressive sizing */
-            #cwg-content > p:nth-of-type(3) {
-                font-size: 1.6rem;
-            }
-
-            #cwg-content > p:nth-of-type(n+4) {
-                font-size: 1.1rem;
-            }
         </style>
     </head>
     <body>
@@ -259,7 +251,7 @@
                 </div>
                 {% if weather['alerts'] %}
                 <div class="alerts">
-                    <strong>Alerts:</strong> {{ weather['alerts'] | join('; ') }}
+                    {{ weather['alerts'] | join('<br>') | safe }}
                 </div>
                 {% endif %}
                 <p class="desc">{{ weather['description'] }}</p>
