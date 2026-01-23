@@ -73,11 +73,12 @@
 
             .alerts {
                 margin-top: 1rem;
-                padding: 0.75rem;
+                padding: 0.5rem;
                 background-color: #fff3cd;
                 border: 1px solid #ffecb5;
                 border-radius: 4px;
                 color: #664d03;
+                font-size: 1.8rem;
             }
 
             .forecast-box {
@@ -89,6 +90,87 @@
                 /* color: #333; */
                 font-weight: bold;
                 font-size: 3.5rem;
+            }
+
+            /* CWG Feed Section */
+            .cwg-feed-container {
+                margin: 3rem 0;
+                padding: 1rem;
+                background-color: #f9f9f9;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            }
+
+            .cwg-feed-container h2 {
+                font-size: 2.2rem;
+                margin-bottom: 1rem;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 0.5rem;
+            }
+
+            .cwg-feed-list {
+                display: flex;
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+
+            .cwg-post {
+                padding: 0.8rem;
+                background-color: white;
+                border-radius: 6px;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            }
+
+            .cwg-post-header {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 0.5rem;
+            }
+
+            .cwg-post-link {
+                font-size: 1.8rem;
+                font-weight: bold;
+                color: #0066cc;
+                text-decoration: none;
+            }
+
+            .cwg-post-time {
+                font-size: 1.6rem;
+                color: #666;
+            }
+
+            .cwg-post-content {
+                font-size: 1.8rem;
+            }
+
+            /* 3rd CWG section - smaller */
+            .cwg-post:nth-child(3) {
+                transform: scale(0.9);
+                transform-origin: top left;
+                width: 111.11%;
+            }
+
+            .cwg-post:nth-child(3) .cwg-post-content {
+                font-size: 1.6rem;
+            }
+
+            .cwg-post:nth-child(3) .cwg-post-time {
+                font-size: 1.4rem;
+            }
+
+            /* 4th and later CWG sections - smaller still */
+            .cwg-post:nth-child(n+4) {
+                transform: scale(0.8);
+                transform-origin: top left;
+                width: 125%;
+            }
+
+            .cwg-post:nth-child(n+4) .cwg-post-content {
+                font-size: 1.4rem;
+            }
+
+            .cwg-post:nth-child(n+4) .cwg-post-time {
+                font-size: 1.2rem;
             }
         </style>
     </head>
@@ -191,6 +273,24 @@
                         document.getElementById('dog-container').style.display = 'none';
                     });
             </script>
+
+            {% if weather.cwg_feed %}
+            <!-- CWG Feed Section -->
+            <div class="cwg-feed-container">
+                <h2>@capitalweather.bsky.social - Capital Weather Gang</h2>
+                <div class="cwg-feed-list">
+                    {% for post in weather.cwg_feed %}
+                    <div class="cwg-post">
+                        <div class="cwg-post-header">
+                            <a href="{{ post.url }}" class="cwg-post-link">{{ post.title }}</a>
+                            <span class="cwg-post-time">{{ post.time }}</span>
+                        </div>
+                        <div class="cwg-post-content">{{ post.content }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
 
         </div>
     </body>
