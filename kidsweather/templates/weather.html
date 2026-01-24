@@ -48,7 +48,8 @@
                 overflow: hidden;
             }
 
-            #cwg-content h1 {
+            #cwg-content h1,
+            #cwg-content section:first-of-type h1 {
                 font-size: 3.0rem;
                 /*text-align: center;*/
                 margin-bottom: 1rem;
@@ -59,18 +60,31 @@
             }
 
             #cwg-content h2 {
-                font-size: 2.5rem;
+                font-size: 2.0rem;
                 border-bottom: 1px solid #000;
                 padding-bottom: 0.5rem;
             }
 
+            #cwg-content section:first-of-type h2 {
+                font-size: 2.5rem;
+            }
+
             #cwg-content h3 {
-                font-size: 2.1rem;
+                font-size: 1.7rem;
                 font-weight: bold;
                 margin: 10px 0;
             }
 
+            #cwg-content section:first-of-type h3 {
+                font-size: 2.1rem;
+            }
+
             #cwg-content p, #cwg-content time {
+                font-size: 1.45rem;
+            }
+
+            #cwg-content section:first-of-type p,
+            #cwg-content section:first-of-type time {
                 font-size: 2.0rem;
             }
 
@@ -82,9 +96,11 @@
                 font-weight: bold;
             }
 
-            #cwg-content h1 time {
+            #cwg-content h1 time,
+            #cwg-content section h1 time,
+            #cwg-content section:first-of-type h1 time {
+                font-size: inherit !important;
                 font-weight: inherit;
-                font-size: inherit;
             }
 
             .weather-header {
@@ -209,18 +225,7 @@
             /* Smaller font for 2nd and later section in CWG content */
             #cwg-content section:nth-of-type(n+2) p,
             #cwg-content section:nth-of-type(n+2) time,
-            #cwg-content > p:nth-of-type(n+2) {
-                font-size: 1.45rem;
-            }
-
-            #cwg-content section:nth-of-type(n+2) h2 {
-                font-size: 2.0rem;
-            }
-
-            #cwg-content section:nth-of-type(n+2) h3 {
-                font-size: 1.7rem;
-            }
-
+            
 
         </style>
     </head>
