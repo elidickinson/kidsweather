@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from ..core.service import WeatherReportService, build_default_service
+from ..core.service import WeatherReportService, build_default_service, fetch_cwg_forecast
 from ..core.settings import load_settings
 from ..formatting.weather import format_for_llm, extract_display_data
 
@@ -105,7 +105,7 @@ class TestWeatherServiceIntegration:
     def test_format_for_llm_with_cwg(self):
         """Test that CWG forecast is included in LLM context when provided."""
         formatted = format_for_llm(MOCK_WEATHER_DATA, cwg_forecast="Warm with sunny skies")
-        assert "LOCAL WEATHER OUTLOOK:" in formatted
+        assert "LOCAL WEATHER OUTLOOK" in formatted
         assert "Warm with sunny skies" in formatted
 
     def test_extract_display_data(self):
@@ -121,6 +121,76 @@ class TestWeatherServiceIntegration:
         assert 'temp' in current
         assert 'feels_like' in current
         assert 'conditions' in current
+
+
+class TestCwgForecast:
+    """Tests for the CWG forecast fetcher."""
+
+    @patch('kidsweather.core.service.requests.get')
+    def test_fetch_cwg_forecast_with_new_api_fields(self, mock_get):
+        """Test that fetch_cwg_forecast uses latest_post_text and latest_post_age_hours."""
+        mock_response = Mock()
+        mock_response.json.return_value = {
+            "main_headline": "Warm and sunny through the weekend",
+            "all_posts_html": "<h1>...</h1>",
+            "latest_post_text": "Temperatures climbing into the upper 60s this afternoon.",
+            "latest_post_updated_at": "2026-02-27T16:40:00-05:00",
+            "latest_post_age_hours": 4.2,
+        }
+        mock_response.raise_for_status.return_value = None
+        mock_get.return_value = mock_response
+
+        result = fetch_cwg_forecast()
+
+        assert result is not None
+        assert "Warm and sunny through the weekend" in result
+        assert "(Posted about 4 hours ago)" in result
+        assert "Temperatures climbing into the upper 60s this afternoon." in result
+        # Verify max_age_hours query param is sent
+        mock_get.assert_called_once()
+        call_kwargs = mock_get.call_args
+        assert call_kwargs[1]["params"]["max_age_hours"] == 12
+
+    @patch('kidsweather.core.service.requests.get')
+    def test_fetch_cwg_forecast_stale_post_returns_none(self, mock_get):
+        """Test that a stale post (nulled by server) returns None."""
+        mock_response = Mock()
+        mock_response.json.return_value = {
+            "main_headline": "Warm and sunny",
+            "all_posts_html": "<h1>...</h1>",
+            "latest_post_text": None,
+            "latest_post_updated_at": "2026-02-26T08:00:00-05:00",
+            "latest_post_age_hours": None,
+        }
+        mock_response.raise_for_status.return_value = None
+        mock_get.return_value = mock_response
+
+        result = fetch_cwg_forecast()
+        assert result is None
+
+    @patch('kidsweather.core.service.requests.get')
+    def test_fetch_cwg_forecast_recent_post_age_label(self, mock_get):
+        """Test age label for a post less than an hour old."""
+        mock_response = Mock()
+        mock_response.json.return_value = {
+            "main_headline": "Rain expected",
+            "latest_post_text": "Showers moving in soon.",
+            "latest_post_age_hours": 0.3,
+        }
+        mock_response.raise_for_status.return_value = None
+        mock_get.return_value = mock_response
+
+        result = fetch_cwg_forecast()
+        assert result is not None
+        assert "(Posted less than an hour ago)" in result
+
+    @patch('kidsweather.core.service.requests.get')
+    def test_fetch_cwg_forecast_api_error_returns_none(self, mock_get):
+        """Test that API errors are handled gracefully."""
+        mock_get.side_effect = Exception("connection refused")
+
+        result = fetch_cwg_forecast()
+        assert result is None
 
 
 class TestWeatherClientIntegration:

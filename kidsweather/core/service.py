@@ -1,7 +1,6 @@
 """High level orchestration for building kid-friendly weather reports."""
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -18,67 +17,37 @@ from ..formatting.weather import extract_display_data, format_for_llm
 
 CWG_API_URL = "https://cwg.eli.pw/api/cwg.json"
 CWG_TIMEOUT = 10
+CWG_MAX_AGE_HOURS = 12
 
 
-def _strip_html(html: str) -> str:
-    """Remove HTML tags and collapse whitespace."""
-    text = re.sub(r"<[^>]+>", " ", html)
-    return re.sub(r"\s+", " ", text).strip()
+def fetch_cwg_forecast(max_age_hours: int = CWG_MAX_AGE_HOURS) -> Optional[str]:
+    """Fetch the CWG forecast and return plain text with age label.
 
-
-def _extract_first_section(html: str) -> Optional[str]:
-    """Pull plain text from the first <section> in CWG HTML content."""
-    match = re.search(r"<section>(.*?)</section>", html, re.DOTALL)
-    if not match:
-        return None
-    return _strip_html(match.group(1))
-
-
-def _parse_cwg_age(html: str) -> Optional[str]:
-    """Parse 'Last fetched' timestamp from CWG HTML and return human-readable age."""
-    match = re.search(r"Last fetched:\s*(.+?)(?:<|$)", html)
-    if not match:
-        return None
+    Uses server-side fields (latest_post_text, latest_post_age_hours) and the
+    max_age_hours query parameter so no HTML parsing or timezone guessing is needed.
+    """
     try:
-        raw = match.group(1).strip().rstrip(".")
-        # Strip timezone suffix for parsing (e.g. " EST", " EDT")
-        raw_no_tz = re.sub(r"\s+[A-Z]{2,4}$", "", raw)
-        fetched = datetime.strptime(raw_no_tz, "%m/%d/%Y %I:%M %p")
-        # Assume US Eastern (UTC-5); close enough for an age estimate
-        fetched_utc = fetched.replace(tzinfo=timezone.utc)  # treat as-is for simple diff
-        age = datetime.now(timezone.utc) - fetched_utc
-        hours = age.total_seconds() / 3600
-        if hours < 1:
-            return "Posted less than an hour ago"
-        elif hours < 24:
-            return f"Posted about {int(hours)} hour{'s' if int(hours) != 1 else ''} ago"
-        else:
-            days = int(hours / 24)
-            return f"Posted about {days} day{'s' if days != 1 else ''} ago"
-    except (ValueError, TypeError):
-        return None
-
-
-def fetch_cwg_forecast() -> Optional[str]:
-    """Fetch the CWG forecast and return the first section as plain text with age."""
-    try:
-        resp = requests.get(CWG_API_URL, timeout=CWG_TIMEOUT)
+        resp = requests.get(
+            CWG_API_URL,
+            params={"max_age_hours": max_age_hours},
+            timeout=CWG_TIMEOUT,
+        )
         resp.raise_for_status()
         data = resp.json()
     except Exception:
         return None
-    all_html = data.get("all_posts_html", "")
-    headline = data.get("main_headline", "")
-    body = _extract_first_section(all_html)
-    if not body:
+    text = data.get("latest_post_text")
+    if not text:
         return None
-    age = _parse_cwg_age(all_html)
+    age = data.get("latest_post_age_hours", 0)
+    headline = data.get("main_headline", "")
+    hours = int(age)
+    age_label = f"Posted about {hours} hour{'s' if hours != 1 else ''} ago" if hours >= 1 else "Posted less than an hour ago"
     parts = []
     if headline:
         parts.append(headline)
-    if age:
-        parts.append(f"({age})")
-    parts.append(body)
+    parts.append(f"({age_label})")
+    parts.append(text)
     return "\n".join(parts)
 
 
