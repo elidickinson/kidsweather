@@ -72,7 +72,11 @@ def _format_metric(value: Optional[float]) -> str:
     return f"{rounded}°F" if rounded is not None else "N/A"
 
 
-def format_for_llm(weather_data: Dict[str, Any], yesterday_data: Optional[Dict[str, Any]] = None) -> str:
+def format_for_llm(
+    weather_data: Dict[str, Any],
+    yesterday_data: Optional[Dict[str, Any]] = None,
+    cwg_forecast: Optional[str] = None,
+) -> str:
     """Convert weather data to an explanatory text block for the LLM."""
 
     tz_offset = weather_data.get("timezone_offset", 0)
@@ -158,19 +162,8 @@ def format_for_llm(weather_data: Dict[str, Any], yesterday_data: Optional[Dict[s
                 hour_line += f" ({', '.join(details)})"
             lines.append(hour_line)
 
-    lines.append("\nNEXT FEW DAYS (for daily_forecasts - use these exact day names):")
-    if len(daily) > 1:
-        for day in daily[1:5]:
-            lines.append(f"\n  {_day_name(day.get('dt'), tz_offset)}:")
-            lines.append(f"    Summary: {day.get('summary', 'No summary available.')}")
-            lines.append(
-                f"    High: {_format_metric(day.get('temp', {}).get('max'))}, "
-                f"Low: {_format_metric(day.get('temp', {}).get('min'))}."
-            )
-            lines.append(f"    Precipitation: {describe_precipitation(day)}")
-            lines.append(f"    Wind: {_describe_wind(day.get('wind_speed'), day.get('wind_gust'))}")
-    else:
-        lines.append("  No extended forecast available.")
+    if cwg_forecast:
+        lines.append(f"\nLOCAL WEATHER OUTLOOK (prefer this forecast if it conflicts with other weather data):\n{cwg_forecast}")
 
     return "\n".join(lines)
 
@@ -199,34 +192,16 @@ def extract_display_data(weather_data: Dict[str, Any]) -> Dict[str, Any]:
 
     current = weather_data.get("current", {})
     daily = weather_data.get("daily", [])
-
-    alerts_payload = []
     tz_offset = weather_data.get("timezone_offset", 0)
-    for alert in (weather_data.get("alerts") or []):
-        start = alert.get("start")
-        end = alert.get("end")
-        alerts_payload.append(
-            {
-                "event": alert.get("event", "Weather Alert"),
-                "start": format_alert_time(start, tz_offset) if start else "N/A",
-                "end": format_alert_time(end, tz_offset) if end else "N/A",
-            }
-        )
 
-    forecast_days = []
-    for day in daily[:5]:
-        timestamp = day.get("dt")
-        day_name = datetime.fromtimestamp(timestamp).strftime("%A") if timestamp else "Unknown"
-        forecast_days.append(
-            {
-                "day": day_name,
-                "high": _safe_round(day.get("temp", {}).get("max")),
-                "low": _safe_round(day.get("temp", {}).get("min")),
-                "conditions": (day.get("weather") or [{}])[0].get("description"),
-                "precip_prob": float(day.get("pop", 0) or 0) * 100,
-                "icon": (day.get("weather") or [{}])[0].get("icon"),
-            }
-        )
+    alerts_payload = [
+        {
+            "event": alert.get("event", "Weather Alert"),
+            "start": format_alert_time(alert["start"], tz_offset) if alert.get("start") else "N/A",
+            "end": format_alert_time(alert["end"], tz_offset) if alert.get("end") else "N/A",
+        }
+        for alert in (weather_data.get("alerts") or [])
+    ]
 
     today = daily[0] if daily else None
     high = today.get("temp", {}).get("max") if today else current.get("temp")
@@ -244,6 +219,4 @@ def extract_display_data(weather_data: Dict[str, Any]) -> Dict[str, Any]:
             "low_temp": _safe_round(low),
         },
         "alerts": alerts_payload,
-        "daily_forecast_raw": forecast_days,
-        "location": "",
     }

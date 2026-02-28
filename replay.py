@@ -88,7 +88,7 @@ def main(log_id, prompt, new_model, show_context):
 
     click.echo(f"Using model for replay: {new_model or original_model}")
 
-    client = LLMClient(settings.primary_llm, settings.fallback_llm, cache=None)
+    client = LLMClient(settings, cache=None)
     new_output = client.generate(
         llm_context,
         prompt_material,

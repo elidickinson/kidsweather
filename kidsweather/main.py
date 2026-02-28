@@ -10,10 +10,11 @@
 # ]
 # ///
 
+from typing import Optional
+
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 import click
 from dotenv import load_dotenv
@@ -56,11 +57,24 @@ def load_weather_data(filename: str, *, directory: Optional[Path] = None) -> dic
 @click.option('--prompt', type=str, help='Custom system prompt text or path to a prompt file.')
 @click.option('--model', type=str, help='Override the LLM model for this invocation.')
 @click.option('--verbose', is_flag=True, default=False, help='Show progress details and the LLM context dump.')
-def main(lat, lon, save, load, render, log_interactions, prompt, model, verbose):
+@click.option('--no-refresh-weather', is_flag=True, default=False, help='Force use of cached weather API data.')
+@click.option('--no-refresh-llm', is_flag=True, default=False, help='Force use of cached LLM response (implies --no-refresh-weather).')
+@click.option('--force-refresh-llm', is_flag=True, default=False, help='Force fresh LLM response (overrides --no-refresh-llm).')
+def main(lat, lon, save, load, render, log_interactions, prompt, model, verbose, no_refresh_weather, no_refresh_llm, force_refresh_llm):
     """Generate a kid-friendly weather report."""
 
     if verbose:
         click.echo('Loading settings...')
+    
+    # --no-refresh-llm implies --no-refresh-weather
+    if no_refresh_llm:
+        no_refresh_weather = True
+    
+    # --force-refresh-llm overrides --no-refresh-llm
+    if force_refresh_llm and no_refresh_llm:
+        click.echo("Warning: --force-refresh-llm overrides --no-refresh-llm", err=True)
+        no_refresh_llm = False
+
     load_settings()  # Ensure environment variables are available.
     if verbose:
         click.echo('Initialising weather report service...')
@@ -81,6 +95,9 @@ def main(lat, lon, save, load, render, log_interactions, prompt, model, verbose)
             source='script',
             prompt_override=prompt,
             model_override=model,
+            no_refresh_weather=no_refresh_weather,
+            no_refresh_llm=no_refresh_llm,
+            force_refresh_llm=force_refresh_llm,
         )
     else:
         if lat is None or lon is None:
@@ -88,16 +105,13 @@ def main(lat, lon, save, load, render, log_interactions, prompt, model, verbose)
 
         if save:
             if verbose:
-                click.echo('Fetching live weather data before saving snapshot...')
-            weather_payload = service.weather_client.fetch_current(lat, lon)
+                msg = 'Using cached weather data for snapshot...' if no_refresh_weather else \
+                      'Fetching live weather data before saving snapshot...'
+                click.echo(msg)
+            weather_payload = service._fetch_weather_data(lat, lon, no_refresh_weather)
             save_path = save_weather_data(weather_payload, f"{save}.json")
             click.echo(f"Saved weather data to: {save_path}")
 
-        if verbose:
-            message = 'Fetching live weather data and requesting LLM summary...'
-            if weather_payload is not None:
-                message = 'Generating report from saved live data via LLM...'
-            click.echo(message)
         report = service.build_report(
             latitude=lat,
             longitude=lon,
@@ -106,6 +120,9 @@ def main(lat, lon, save, load, render, log_interactions, prompt, model, verbose)
             source='script',
             prompt_override=prompt,
             model_override=model,
+            no_refresh_weather=no_refresh_weather,
+            no_refresh_llm=no_refresh_llm,
+            force_refresh_llm=force_refresh_llm,
         )
 
     if verbose:
@@ -120,14 +137,6 @@ def main(lat, lon, save, load, render, log_interactions, prompt, model, verbose)
     click.echo(f"\nCurrent Temperature: {report['temperature']}°F (Feels like: {report['feels_like']}°F)")
     click.echo(f"Conditions: {report['conditions']}")
     click.echo(f"Today's Range: High {report['high_temp']}°F / Low {report['low_temp']}°F")
-
-    daily_forecasts = report.get('daily_forecasts_llm', {})
-    if isinstance(daily_forecasts, dict):
-        for day, forecast in daily_forecasts.items():
-            click.echo(f"{day}: {forecast}")
-    elif isinstance(daily_forecasts, list):
-        for idx, forecast in enumerate(daily_forecasts, start=1):
-            click.echo(f"Day {idx}: {forecast}")
 
     if report.get('alerts'):
         click.echo(f"\nAlerts: {', '.join(report['alerts'])}")

@@ -35,22 +35,25 @@ class LLMClient:
         *,
         model_override: Optional[str] = None,
         api_key_override: Optional[str] = None,
+        no_refresh: bool = False,
+        force_refresh: bool = False,
     ) -> Dict[str, Any]:
         """Generate a response from the primary LLM (with fallback if configured)."""
 
         self.settings.require_llm_configured()
-        cache_keys = []
-        if self.cache:
-            model = model_override or self.settings.llm_model or "unknown"
-            primary_key = _make_cache_key(context, system_prompt, model)
-            cache_keys.append(primary_key)
-            if not model_override and self.settings.has_fallback_llm():
-                fallback_model = self.settings.fallback_llm_model or "unknown"
-                cache_keys.append(_make_cache_key(context, system_prompt, fallback_model))
+        
+        # Check cache if available and not forcing refresh or no_refresh
+        if self.cache and not no_refresh and not force_refresh:
+            # Build cache keys for both primary and fallback models
+            cache_keys = self._build_cache_keys(context, system_prompt, model_override)
             for key in cache_keys:
                 cached = self.cache.get(key)
                 if cached is not None:
                     return cached
+            
+            # If no_refresh=True, fail here since we didn't find cached data
+            if no_refresh:
+                raise ValueError("No cached LLM response found and --no-refresh-llm was specified")
 
         try:
             result = self._invoke_provider(
@@ -77,7 +80,9 @@ class LLMClient:
                     f"Primary LLM failed ({exc!r}) and fallback also failed ({fallback_exc!r})."
                 ) from exc
 
-        if self.cache:
+        if self.cache and not no_refresh and not force_refresh:
+            # Cache the result unless we're in no_refresh or force_refresh mode
+            # no_refresh = read-only from cache, force_refresh = bypass cache completely
             model_used = result.get("_model_used") or "unknown"
             cache_key = _make_cache_key(context, system_prompt, model_used)
             self.cache.set(cache_key, result, expire=self.cache_ttl_seconds)
@@ -148,6 +153,20 @@ class LLMClient:
         parsed["_model_used"] = model
         parsed["_provider_label"] = provider_label
         return parsed
+    
+    def _build_cache_keys(self, context: Any, system_prompt: str, model_override: Optional[str]) -> list[str]:
+        """Build cache keys for primary and (if applicable) fallback models."""
+        cache_keys = []
+        model = model_override or self.settings.llm_model or "unknown"
+        primary_key = _make_cache_key(context, system_prompt, model)
+        cache_keys.append(primary_key)
+        
+        # Add fallback key if fallback is configured and we're not overriding the model
+        if not model_override and self.settings.has_fallback_llm():
+            fallback_model = self.settings.fallback_llm_model or "unknown"
+            cache_keys.append(_make_cache_key(context, system_prompt, fallback_model))
+            
+        return cache_keys
 
     @staticmethod
     def _normalise_content(raw_content: str) -> str:
