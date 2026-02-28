@@ -24,20 +24,6 @@ from .core.service import build_default_service
 from .formatting.html import render_to_file
 
 
-def _get_weather_data_for_save(service, lat: float, lon: float, no_refresh_weather: bool) -> dict:
-    """Get weather data for saving, respecting cache settings."""
-    return service._fetch_weather_data(lat, lon, no_refresh_weather)
-
-
-def _get_cache_status(no_refresh_weather: bool, no_refresh_llm: bool, force_refresh_llm: bool, weather_payload: Optional[dict]) -> str:
-    """Generate cache status message with boolean flags."""
-    cached_weather = no_refresh_weather or weather_payload is not None
-    cached_llm = no_refresh_llm and not force_refresh_llm
-    force_llm = force_refresh_llm
-
-    return f"cached weather: {cached_weather}, cached llm: {cached_llm}, force llm: {force_llm}"
-
-
 def save_weather_data(data: dict, filename: Optional[str] = None, *, directory: Optional[Path] = None) -> Path:
     """Persist raw weather data to disk for later replay or testing."""
     settings = load_settings()
@@ -88,9 +74,7 @@ def main(lat, lon, save, load, render, log_interactions, prompt, model, verbose,
     if force_refresh_llm and no_refresh_llm:
         click.echo("Warning: --force-refresh-llm overrides --no-refresh-llm", err=True)
         no_refresh_llm = False
-    
 
-    
     load_settings()  # Ensure environment variables are available.
     if verbose:
         click.echo('Initialising weather report service...')
@@ -124,12 +108,10 @@ def main(lat, lon, save, load, render, log_interactions, prompt, model, verbose,
                 msg = 'Using cached weather data for snapshot...' if no_refresh_weather else \
                       'Fetching live weather data before saving snapshot...'
                 click.echo(msg)
-            weather_payload = _get_weather_data_for_save(service, lat, lon, no_refresh_weather)
+            weather_payload = service._fetch_weather_data(lat, lon, no_refresh_weather)
             save_path = save_weather_data(weather_payload, f"{save}.json")
             click.echo(f"Saved weather data to: {save_path}")
 
-        if verbose:
-            click.echo(_get_cache_status(no_refresh_weather, no_refresh_llm, force_refresh_llm, weather_payload))
         report = service.build_report(
             latitude=lat,
             longitude=lon,
@@ -155,14 +137,6 @@ def main(lat, lon, save, load, render, log_interactions, prompt, model, verbose,
     click.echo(f"\nCurrent Temperature: {report['temperature']}°F (Feels like: {report['feels_like']}°F)")
     click.echo(f"Conditions: {report['conditions']}")
     click.echo(f"Today's Range: High {report['high_temp']}°F / Low {report['low_temp']}°F")
-
-    daily_forecasts = report.get('daily_forecasts_llm', {})
-    if isinstance(daily_forecasts, dict):
-        for day, forecast in daily_forecasts.items():
-            click.echo(f"{day}: {forecast}")
-    elif isinstance(daily_forecasts, list):
-        for idx, forecast in enumerate(daily_forecasts, start=1):
-            click.echo(f"Day {idx}: {forecast}")
 
     if report.get('alerts'):
         click.echo(f"\nAlerts: {', '.join(report['alerts'])}")

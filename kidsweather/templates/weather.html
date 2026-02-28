@@ -180,45 +180,6 @@
                 text-align: center;
             }
 
-            .forecast {
-                margin: 2rem 0;
-            }
-
-            .forecast-grid {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 1.5rem;
-            }
-
-            .forecast-box {
-                background: #f8f9fa;
-                border-radius: 8px;
-                padding: 1rem;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            }
-
-            .forecast-day {
-                font-weight: bold;
-                font-size: 3.1rem;
-                margin-bottom: 0.2rem;
-                white-space: nowrap;
-            }
-
-
-            .forecast-temps {
-                display: flex;
-                gap: 1rem;
-            }
-
-            .forecast-box-desc {
-                font-weight: bold;
-                font-size: 3.1rem;
-                white-space: nowrap;
-                overflow: hidden;
-                /*text-overflow: ellipsis;*/
-                display: block;
-            }
-
             #dogs {
                 display: flex;
                 flex-wrap: nowrap;
@@ -274,34 +235,6 @@
                 </div>
                 {% endif %}
                 <p class="desc">{{ weather['description'] }}</p>
-
-                <div class="forecast" style="display:none">
-                    <div class="forecast-grid">
-                        {% for day, forecast in weather['daily_forecasts_llm'].items() %}
-                        {% if loop.index <= 2 %}
-                        <div class="forecast-box">
-                            <div class="forecast-day">
-                                {{ day }}
-                                {% set day_name = day %}
-                                {% set day_index = loop.index0 %}
-                                <span>↑{{ weather['daily_forecast_raw'][day_index]['high'] }}°F</span>
-                                <span>↓{{ weather['daily_forecast_raw'][day_index]['low'] }}°F</span>
-                            </div>
-                            <div class="forecast-box-desc">
-                                {% set icon = weather['daily_forecast_raw'][day_index]['icon'] if day_index < weather['daily_forecast_raw']|length else '' %}
-                                {% if icon %}
-                                <img src="https://openweathermap.org/img/wn/{{ icon }}@4x.png"
-                                     style="width: 125px; height: 125px; vertical-align: middle; filter: brightness(0.7); margin-left: -20px">
-                                {% endif %}
-
-                                {{ forecast }}
-
-                            </div>
-                        </div>
-                        {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
             </div>
 
             <div id="dogs">

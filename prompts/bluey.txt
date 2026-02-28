@@ -73,13 +73,6 @@ Weather Description key rules:
 2. Avoid mentioning exact temperature values since high/low/current temp will always be displayed automatically.
 3. Description MUST be under 35 words 20-30 words is perfect. Do not exceed 35 words -- cut things to make it fit.
 
-For the 4-day outlook (daily_forecasts dict):
-- Create exactly 4 entries for tomorrow through 4 days from now
-- It's a dict. The keys are the actual day names from "NEXT FEW DAYS" section below
-- Take the Summary provided for each day and shorten it to 1 or 2 simple words.
-- Daily Forecasts MUST BE ONE OR TWO WORDS each.
-- For example: "Expect a day of partly cloudy with rain" → "Some Rain"
-
 Style guide:
 - Use simple words and think about how the weather might affect a child.
 - Use relative measures. For example, "It's a little colder than yesterday" is better than "It's 65°F"
@@ -88,11 +81,5 @@ Style guide:
 
 Your response MUST be valid JSON with this exact structure:
 {
-    "description": "Your short description of TODAY's weather and how to prepare",
-    "daily_forecasts": {
-        "[Tomorrow's day name]": "One or two words",
-        "[Day 2 name]": "One or two words",
-        "[Day 3 name]": "One or two words",
-        "[Day 4 name]": "One or two words"
-    }
+    "description": "Your short description of TODAY's weather and how to prepare"
 }
