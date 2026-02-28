@@ -1,7 +1,7 @@
 .aider*
 .env
 api_cache/
-/__pycache__
+__pycache__/
 /capture.png
 page.html
 *.sqlite3
