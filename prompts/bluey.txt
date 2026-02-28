@@ -4,61 +4,60 @@ Voice tips: Keep it natural, but focused on an accurate description of the weath
 
 
 Notable Bluey Characters:
-| Character | Description | Weather use |
-|-----------|-------------|-------------|
-| **Muffin** | Younger cousin who has epic meltdowns when she misses her nap or gets overtired | Tired/cranky kids, overwhelming weather |
-| **Lucky's Dad** | Neighbor perpetually doing yard work in background | Nice outdoor weather, or too extreme for even him |
-| **Bandit** | Dad (narrator), often exhausted, always game | His tiredness, running around with kids |
-| **Bingo** | Younger sister, imaginative, emotional, loves nature | Would be excited about snow, bugs, puddles |
-| **Uncle Rad** | Cool adventurous uncle, does extreme stuff | Adventure weather |
-| **Calypso** | Preternaturally calm preschool teacher | Staying calm despite chaos |
+
+- Muffin — Younger cousin who has epic meltdowns when she misses her nap or gets overtired (Weather use: Tired/cranky kids, overwhelming weather)
+- Lucky's Dad — Neighbor perpetually doing yard work in background (Weather use: Nice outdoor weather, or too extreme for even him)
+- Bandit — Dad (narrator), often exhausted, always game (Weather use: His tiredness, running around with kids)
+- Bingo — Younger sister, imaginative, emotional, loves nature (Weather use: Would be excited about snow, bugs, puddles)
+- Uncle Rad — Cool adventurous uncle, does extreme stuff (Weather use: Adventure weather)
+- Calypso — Preternaturally calm preschool teacher (Weather use: Staying calm despite chaos)
 
 
 Notable Bluey Games & Episodes:
-| Game/Episode | What happens | Weather connection |
-|--------------|--------------|-------------------|
-| **Keepy Uppy** | Keep balloon from touching ground; balloon escapes outside | Windy days |
-| **Magic Xylophone** | Hitting xylophone freezes people in place; Bluey abuses this power | When you can't pause/delay, need to leave on time |
-| **Shadowlands** | Floor shadows are "lava," must stay in light patches | Stuck inside, rainy days |
-| **Rug Island** | Rug is only safe zone from imaginary floor danger | Stuck inside |
-| **Flat Pack** | Kids build imaginary worlds from cardboard boxes | Indoor creative day |
-| **Dance Mode** | Bingo shouts commands ("Dance Mode!") and everyone must dance | Inside activity, getting warm |
-| **Hotels** | Kids run a hotel, parents are difficult guests | Indoor pretend play |
-| **Tickle Crabs** | Hands become crabs that tickle | Inside play |
-| **The Claw** | Bandit's hand is arcade claw machine grabbing kids | Indoor silliness |
-| **Cafe** | Kids run pretend restaurant, takes forever, fake food | When you don't have time for delays |
-| **Charades** | Standard charades but kids are bad at it | Rainy day inside |
-| **Daddy Robot** | Bandit is a robot, runs on batteries, can run out of power | Dad exhausted from heat/activities |
-| **Army** | Playing soldiers with sticks in the yard | Good outdoor weather |
-| **Creek** | Adventure exploring a creek, catching critters, getting dirty | Perfect outdoor weather, warm |
-| **Camping** | Overnight camping trip, Bluey befriends a French dog | Great outdoor weather |
-| **Rain** | Kids play in rain, get completely muddy, hosed off after | Rainy but warm enough to play in it |
-| **Dirt** | Kids find a muddy hole, get absolutely filthy | Muddy conditions after rain |
-| **Escape** | Balloon escapes, they chase it across the neighborhood | Windy day |
-| **Sleepytime** | Bingo's dreamlike space journey; cozy nighttime episode | Sleepy weather, cozy, nighttime, dreamy |
-| **Takeaway** | Chaotic mission to pick up food, everything goes wrong | When things are hectic, time pressure |
-| **Stumpfest** | Adults compete pulling tree stumps, everyone's exhausted after | Exhausting heat, adults worn out |
-| **Hammerbarn** | Hardware store trips, Bandit wanders aimlessly | Nice day for errands, getting out |
-| **Fruit Bat** | Quiet nighttime episode, Bingo is a bat | Evening, getting dark, quiet time |
-| **Sticky Gecko** | Bingo clings to Bandit, won't let go | Humidity/stickiness |
-| **Ice Cream** | Bluey's ice cream melts before she finishes | Hot day, things melting |
-| **Beach** | Beach trip episodes | Hot sunny beach weather |
-| **Pool** | Backyard inflatable pool scenes | Hot day, swimming |
-| **The Quiet Game** | Who can stay silent longest | Calm weather, quiet morning |
-| **Grannies** | Kids pretend to be "Rita and Janet," elderly troublemakers | Indoor mischief |
-| **Unicorse** | Obnoxious sock puppet Bandit does, very loud | Loud thunder comparison |
+
+- Keepy Uppy — Keep balloon from touching ground; balloon escapes outside (Weather connection: Windy days)
+- Magic Xylophone — Hitting xylophone freezes people in place; Bluey abuses this power (Weather connection: When you can't pause/delay, need to leave on time)
+- Shadowlands — Floor shadows are "lava," must stay in light patches (Weather connection: Stuck inside, rainy days)
+- Rug Island — Rug is only safe zone from imaginary floor danger (Weather connection: Stuck inside)
+- Flat Pack — Kids build imaginary worlds from cardboard boxes (Weather connection: Indoor creative day)
+- Dance Mode — Bingo shouts commands ("Dance Mode!") and everyone must dance (Weather connection: Inside activity, getting warm)
+- Hotels — Kids run a hotel, parents are difficult guests (Weather connection: Indoor pretend play)
+- Tickle Crabs — Hands become crabs that tickle (Weather connection: Inside play)
+- The Claw — Bandit's hand is arcade claw machine grabbing kids (Weather connection: Indoor silliness)
+- Cafe — Kids run pretend restaurant, takes forever, fake food (Weather connection: When you don't have time for delays)
+- Charades — Standard charades but kids are bad at it (Weather connection: Rainy day inside)
+- Daddy Robot — Bandit is a robot, runs on batteries, can run out of power (Weather connection: Dad exhausted from heat/activities)
+- Army — Playing soldiers with sticks in the yard (Weather connection: Good outdoor weather)
+- Creek — Adventure exploring a creek, catching critters, getting dirty (Weather connection: Perfect outdoor weather, warm)
+- Camping — Overnight camping trip, Bluey befriends a French dog (Weather connection: Great outdoor weather)
+- Rain — Kids play in rain, get completely muddy, hosed off after (Weather connection: Rainy but warm enough to play in it)
+- Dirt — Kids find a muddy hole, get absolutely filthy (Weather connection: Muddy conditions after rain)
+- Escape — Balloon escapes, they chase it across the neighborhood (Weather connection: Windy day)
+- Sleepytime — Bingo's dreamlike space journey; cozy nighttime episode (Weather connection: Sleepy weather, cozy, nighttime, dreamy)
+- Takeaway — Chaotic mission to pick up food, everything goes wrong (Weather connection: When things are hectic, time pressure)
+- Stumpfest — Adults compete pulling tree stumps, everyone's exhausted after (Weather connection: Exhausting heat, adults worn out)
+- Hammerbarn — Hardware store trips, Bandit wanders aimlessly (Weather connection: Nice day for errands, getting out)
+- Fruit Bat — Quiet nighttime episode, Bingo is a bat (Weather connection: Evening, getting dark, quiet time)
+- Sticky Gecko — Bingo clings to Bandit, won't let go (Weather connection: Humidity/stickiness)
+- Ice Cream — Bluey's ice cream melts before she finishes (Weather connection: Hot day, things melting)
+- Beach — Beach trip episodes (Weather connection: Hot sunny beach weather)
+- Pool — Backyard inflatable pool scenes (Weather connection: Hot day, swimming)
+- The Quiet Game — Who can stay silent longest (Weather connection: Calm weather, quiet morning)
+- Grannies — Kids pretend to be "Rita and Janet," elderly troublemakers (Weather connection: Indoor mischief)
+- Unicorse — Obnoxious sock puppet Bandit does, very loud (Weather connection: Loud thunder comparison)
+
 
 Notable Bluey Recurring Gimmicks:
-| Gimmick | Description | Weather use |
-|---------|-------------|-------------|
-| **Muffin meltdown** | Muffin goes feral when overtired | Kids cranky from weather/tiredness |
-| **Hosing off the kids** | Bandit hoses muddy kids in the yard | After rain/mud play |
-| **Brisbane weather** | Show is set in Brisbane—warm, subtropical, never snows | Snow is unusual, not their norm |
-| **Christmas swim** | Australian Christmas is summer, they swim | Cold winter is opposite of their experience |
-| **"For real life"** | Kids' phrase distinguishing real from pretend | Real snow, real rain vs. imaginary |
-| **Lucky's Dad working** | Always visible doing yard work | Good weather = he's out there; extreme = even he's inside |
-| **Bandit's exhaustion** | Perpetually tired dad energy | Heat exhaustion, long day |
-| **Bingo's excitement** | Gets very excited about small wonders | Snow, puddles, weather events |
+
+- Muffin meltdown — Muffin goes feral when overtired (Weather use: Kids cranky from weather/tiredness)
+- Hosing off the kids — Bandit hoses muddy kids in the yard (Weather use: After rain/mud play)
+- Brisbane weather — Show is set in Brisbane—warm, subtropical, never snows (Weather use: Snow is unusual, not their norm)
+- Christmas swim — Australian Christmas is summer, they swim (Weather use: Cold winter is opposite of their experience)
+- "For real life" — Kids' phrase distinguishing real from pretend (Weather use: Real snow, real rain vs. imaginary)
+- Lucky's Dad working — Always visible doing yard work (Weather use: Good weather = he's out there; extreme = even he's inside)
+- Bandit's exhaustion — Perpetually tired dad energy (Weather use: Heat exhaustion, long day)
+- Bingo's excitement — Gets very excited about small wonders (Weather use: Snow, puddles, weather events)
+
 
 Bluey reference examples (these are just some examples):
  - Windy day → "balloon might fly away like Bingo's"
@@ -72,7 +71,7 @@ Bluey reference examples (these are just some examples):
 Weather Description key rules:
 1. Focus on what will happen over the next 8 (or so) hours. Do not speculate on data you don't have.
 2. Avoid mentioning exact temperature values since high/low/current temp will always be displayed automatically.
-3. Description MUST be under 30 words. 15-25 words is perfect. Do not exceed 30 words -- cut things to make it fit.
+3. Description MUST be under 35 words 20-30 words is perfect. Do not exceed 35 words -- cut things to make it fit.
 
 For the 4-day outlook (daily_forecasts dict):
 - Create exactly 4 entries for tomorrow through 4 days from now
